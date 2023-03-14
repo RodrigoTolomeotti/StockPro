@@ -156,10 +156,10 @@
                 mensagem: null,
                 contato: {},
                 origem: null,
-                campanhas: false,
-                envios: false,
-                visualizados: false,
-                retornos: false,
+                campanhas: true,
+                envios: true,
+                visualizados: true,
+                retornos: true,
                 flg_campanhas: false,
                 flg_envios: false,
                 flg_visualizados: false,
@@ -184,171 +184,16 @@
         },
         computed: {
             graficoCampanhas() {
-                return {
-                    series: [
-                    {name: 'Contatos', data: this.campanhas.map(o => o.contatos)},
-                    {name: 'Bloqueios', data: this.campanhas.map(o => o.bloqueios)},
-                    {name: 'Enviados', data: this.campanhas.map(o => o.envios)},
-                    {name: 'Visualizados', data: this.campanhas.map(o => o.abertos)},
-                    {name: 'Retornos', data: this.campanhas.map(o => o.respostas)},
-                    ],
-                    chartOptions: {
-                    chart: {
-                    type: 'bar',
-                    height: 430,
-                    events: {
-                        click: this.clickCampanha,
-                      }
-                    },
-                    plotOptions: {
-                    bar: {
-                    horizontal: true,
-                    dataLabels: {
-                    position: 'top',
-                    },
-                    }
-                    },
-                    dataLabels: {
-                    enabled: true,
-                    offsetX: -6,
-                    style: {
-                    fontSize: '12px',
-                    colors: ['#fff']
-                    }
-                    },
-                    stroke: {
-                    show: true,
-                    width: 1,
-                    colors: ['#fff']
-                    },
-                    xaxis: {
-                    categories: this.campanhas.map(o => o.nome),
-                    },
-                    }
-                }
+                return null;
             },
             graficoEnviosHoje() {
-                return {
-                    series: this.envios.map(o => o.envios),
-                    chartOptions: {
-                    labels: this.envios.map(o => o.nome),
-                    chart: {
-                    type: 'donut',
-                    },
-                    dataLabels: {
-                    enabled: false,
-                    },
-                    responsive: [{
-                    breakpoint: 480,
-                    options: {
-                    chart: {
-                    width: 200
-                    },
-                    legend: {
-                    position: 'bottom'
-                    }
-                    }
-                    }],
-                    plotOptions: {
-                    pie: {
-                    donut: {
-                    labels: {
-                    show: true,
-                    value: {
-                    fontSize: '1em',
-                    offsetY: 0,
-                    },
-                    total: {
-                    show: true
-                    }
-                    }
-                    }
-                    }
-                    }
-                    }
-                }
+                return null;
             },
             graficoVisualizadosHoje() {
-                return {
-                    series: this.visualizados.map(o => o.visualizados),
-                    chartOptions: {
-                    labels: this.visualizados.map(o => o.nome),
-                    chart: {
-                    type: 'donut',
-                    },
-                    dataLabels: {
-                    enabled: false,
-                    },
-                    responsive: [{
-                    breakpoint: 480,
-                    options: {
-                    chart: {
-                    width: 200
-                    },
-                    legend: {
-                    position: 'bottom'
-                    }
-                    }
-                    }],
-                    plotOptions: {
-                    pie: {
-                    donut: {
-                    labels: {
-                    show: true,
-                    value: {
-                    fontSize: '1em',
-                    offsetY: 0,
-                    },
-                    total: {
-                    show: true
-                    }
-                    }
-                    }
-                    }
-                    }
-                    }
-                }
+                return null;
             },
             graficoRetornosHoje() {
-                return {
-                    series: this.retornos.map(o => o.retornos),
-                    chartOptions: {
-                    labels: this.retornos.map(o => o.nome),
-                    chart: {
-                    type: 'donut',
-                    },
-                    dataLabels: {
-                    enabled: false,
-                    },
-                    responsive: [{
-                    breakpoint: 480,
-                    options: {
-                    chart: {
-                    width: 200,
-                    },
-                    legend: {
-                    position: 'bottom'
-                    }
-                    }
-                    }],
-                    plotOptions: {
-                    pie: {
-                    donut: {
-                    labels: {
-                    show: true,
-                    value: {
-                    fontSize: '1em',
-                    offsetY: 0,
-                    },
-                    total: {
-                    show: true
-                    }
-                    }
-                    }
-                    }
-                    }
-                    }
-                }
+                return 0;
             },
             totalFilters() {
                 return Object.keys(this.filters).filter(k => this.filters[k] && this.filters[k] != '').length
@@ -356,54 +201,11 @@
         },
         methods: {
             loadRelatorio() {
-                axios.get('api/relatorio', {
-                    params: {
-                        ...this.filters
-                    }
-                }).then(res => {
-
-                    this.campanhas = res.data.data.campanhas
-                    this.retornos = res.data.data.retornos
-                    this.envios = res.data.data.envios
-                    this.visualizados = res.data.data.visualizados
-
-                    this.campanhas.length == 0 ? this.flg_campanhas = true : this.flg_campanhas = false
-                    this.envios.length == 0 ? this.flg_envios = true : this.flg_envios = false
-                    this.visualizados.length == 0 ? this.flg_visualizados = true : this.flg_visualizados = false
-                    this.retornos.length == 0 ? this.flg_retornos = true : this.flg_retornos = false
-
-                }).catch((error) => {
-
-                    store.alerts.push({text: 'Algo deu errado ao carregar relatório 😢', variant:'danger', delay:'3500'})
-
-                })
-            },
-            clickCampanha(event, chartContext, config) {
-
-                this.filters.campanha_idClick = this.campanhas[config.dataPointIndex].id
-
-                if(config.seriesIndex == 0) {
-                    this.modalContatos = true
-                }else if(config.seriesIndex == 1){
-                    this.modalContatosBloqueados = true;
-                }else if(config.seriesIndex == 2) {
-                    this.modalEnvios = true
-                }else if(config.seriesIndex == 3) {
-                    this.modalVisualizacoes = true
-                }else if(config.seriesIndex == 4) {
-                    this.modalRetornos = true
-                }
-            },
-            loadOrigem() {
-                axios.get('api/origem').then(res => {
-
-                    this.origens = res.data.data
-
-                }).catch((error) => {
-
-                    store.alerts.push({text: 'Algo deu errado ao carregar as origens 😢', variant:'danger', delay:'3500'})
-
-                })
+                this.flg_campanhas = true;
+                this.flg_retornos = true;
+                this.flg_envios = true;
+                this.flg_visualizados = true;
+                return null;
             },
             abrirFiltros() {
                 this.temporaryFilters = JSON.parse(JSON.stringify(this.filters))
