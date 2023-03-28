@@ -12,9 +12,6 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
 
-        $this->call('CargoSeeder');
-        $this->call('DepartamentoSeeder');
-        $this->call('ProfissaoSeeder');
         $this->call('OrigemSeeder');
         $this->call('TelaSeeder');
         $this->call('NivelUsuarioSeeder');

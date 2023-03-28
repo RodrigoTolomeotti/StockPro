@@ -11,10 +11,15 @@
 |
 */
 
-$factory->define(App\GrupoContato::class, function (Faker\Generator $faker) {
+$factory->define(App\Cliente::class, function (Faker\Generator $faker) {
     $username = $faker->userName;
+    $user = App\Usuario::all()->random(1)->first();
     return [
-        'usuario_id' => App\Usuario::all()->random(1)->first()->id,
-        'nome' => $faker->jobTitle
+        'usuario_id' => $user->id,
+        'nome' => $faker->name,
+        'telefone' => null,
+        'email' => $faker->email,
+        'endereco' => $faker->address,
+        'cpf_cnpj' => '12345678912345'
     ];
 });

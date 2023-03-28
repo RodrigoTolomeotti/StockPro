@@ -35,9 +35,7 @@ class DevelopSeeder extends Seeder
 
         }
 
-        factory(App\GrupoContato::class, 20)->create();
-        factory(App\Contato::class, 150)->create();
-        // factory(App\Notificacao::class, 20)->create();
+        factory(App\Cliente::class, 150)->create();
 
     }
 }

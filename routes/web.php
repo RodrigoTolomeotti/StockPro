@@ -23,24 +23,9 @@ $router->get('inicio', function () use ($router) {
 $router->get('contatos', function () use ($router) {
     return view('interfaces.contatos');
 });
-$router->get('campanhas', function () use ($router) {
-    return view('interfaces.campanhas');
-});
-$router->get('grupos-contato', function () use ($router) {
-    return view('interfaces.gruposContato');
-});
 $router->get('configuracoes', function () use ($router) {
     return view('interfaces.configuracoes');
 });
-$router->get('retornos', function() use ($router) {
-    return view('interfaces.retornos');
+$router->get('clientes', function() use ($router) {
+    return view('interfaces.clientes');
 });
-$router->get('envios', function() use ($router) {
-    return view('interfaces.envios');
-});
-
-// $router->group(['prefix' => 'testar'], function() use ($router) {
-//
-//     $router->get('enviarEmail', 'UsuarioController@enviarEmail');
-//
-// });

@@ -54,72 +54,18 @@ $router->group(['prefix' => 'contato', 'middleware' => 'auth'], function () use 
 
 });
 
-$router->group(['prefix' => 'campanha', 'middleware' => 'auth'], function () use ($router) {
-
-    $router->get('/', 'CampanhaController@getAll');
-    $router->post('/', 'CampanhaController@create');
-    $router->put('/{id}', 'CampanhaController@update');
-    $router->patch('/{id}/ativar', 'CampanhaController@ativar');
-    $router->patch('/{id}/inativar', 'CampanhaController@inativar');
-
-});
-
-$router->group(['prefix' => 'cargo', 'middleware' => 'auth'], function () use ($router) {
-
-    $router->get('/', 'CargoController@getAll');
-
-});
-
 $router->group(['prefix' => 'origem', 'middleware' => 'auth'], function () use ($router) {
 
     $router->get('/', 'OrigemController@getAll');
 
 });
 
-$router->group(['prefix' => 'departamento', 'middleware' => 'auth'], function () use ($router) {
+$router->group(['prefix' => 'cliente', 'middleware' => 'auth'], function () use ($router) {
 
-    $router->get('/', 'DepartamentoController@getAll');
-
-});
-
-$router->group(['prefix' => 'profissao', 'middleware' => 'auth'], function () use ($router) {
-
-    $router->get('/', 'ProfissaoController@getAll');
-
-});
-
-$router->group(['prefix' => 'grupo-contato', 'middleware' => 'auth'], function () use ($router) {
-
-    $router->get('/', 'GrupoContatoController@getAll');
-    $router->post('/', 'GrupoContatoController@create');
-    $router->put('/{id}', 'GrupoContatoController@update');
-    $router->delete('/{id}', 'GrupoContatoController@delete');
-
-});
-
-$router->group(['prefix' => 'retorno', 'middleware' => 'auth'], function () use ($router) {
-    $router->get('/', 'RetornoController@getAll');
-    $router->get('/export', 'RetornoController@exportCSV');
-    $router->post('/', 'RetornoController@create');
-    $router->put('/{id}', 'RetornoController@update');
-
-});
-
-$router->group(['prefix' => 'template', 'middleware' => 'auth'], function () use ($router) {
-
-    $router->post('upload-file', 'TemplateController@uploadFile');
-
-});
-
-$router->group(['middleware' => 'auth'], function () use ($router) {
-
-    $router->post('teste-email', 'TemplateController@testarEnvio');
-
-});
-
-$router->group(['middleware' => 'auth'], function () use ($router) {
-
-    $router->post('teste-whatsapp', 'TemplateController@testarEnvioWhatsapp');
+    $router->get('/', 'ClienteController@getAll');
+    $router->post('/', 'ClienteController@create');
+    $router->put('/{id}', 'ClienteController@update');
+    $router->delete('/{id}', 'ClienteController@delete');
 
 });
 
@@ -130,26 +76,8 @@ $router->group(['prefix' => 'notificacao', 'middleware' => 'auth'], function () 
 
 });
 
-$router->group(['prefix' => 'envio', 'middleware' => 'auth'], function () use ($router) {
-
-    $router->get('/', 'EnvioController@getAll');
-
-});
-
 $router->group(['prefix' => 'relatorio', 'middleware' => 'auth'], function () use ($router) {
 
     $router->get('/', 'RelatorioController@getAll');
 
 });
-
-// $router->group(['prefix' => 'usuarios', 'middleware' => 'auth'], function () use ($router) {
-//
-//     $router->get('/', 'UsuarioController@getAll');
-//
-// });
-
-// $router->group(['prefix' => 'nivel-usuario', 'middleware' => 'auth'], function () use ($router) {
-//
-//     $router->get('/', 'NivelUsuarioController@getAll');
-//
-// });

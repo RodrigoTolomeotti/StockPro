@@ -21,7 +21,7 @@
             Olá
         </h1>
         <h2 style="font-weight: normal;margin-top: 20px;">
-            Seja bem vindo ao <span style="color:#4a90fe">Climb</span>
+            Seja bem vindo ao <span style="color:#4a90fe">StockPro</span>
         </h2>
     </div> --}}
     <div>

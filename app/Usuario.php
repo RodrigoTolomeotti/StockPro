@@ -29,16 +29,8 @@ class Usuario extends Model implements AuthenticatableContract, AuthorizableCont
         'senha', 'conta_senha', 'token'
     ];
 
-    public function grupos_contato() {
-        return $this->hasMany('App\GrupoContato');
-    }
-
-    public function contatos() {
-        return $this->hasMany('App\Contato');
-    }
-
-    public function campanhas() {
-        return $this->hasMany('App\Campanha');
+    public function clientes() {
+        return $this->hasMany('App\Cliente');
     }
 
     public function erros() {
