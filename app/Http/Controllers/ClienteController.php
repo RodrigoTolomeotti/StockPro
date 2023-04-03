@@ -64,6 +64,8 @@ class ClienteController extends Controller
     private function getValidation() {
         return [
             'nome' =>       ['required', 'string', 'max:256'],
+            'cpf_cnpj' =>   ['required', 'string', 'max:14'],
+            'Telefone' =>   ['nullable', 'numeric', 'digits_between:1,11']
         ];
     }
 

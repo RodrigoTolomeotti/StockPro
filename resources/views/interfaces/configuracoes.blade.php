@@ -67,7 +67,7 @@
                         </div>
 
                     </transition>
-                    <transition name="tab-content">
+                    <!-- <transition name="tab-content">
                         <div v-if="tabs[1].active" class="p-3">
 
                             <b-row>
@@ -203,7 +203,7 @@
 
                         </div>
 
-                    </transition>
+                    </transition> -->
 
                 </c-card>
 
@@ -539,9 +539,9 @@
             tabs() {
                 return [
                     {value: 1, text: 'Usuário' + (this.isUsuarioChanged ? ' •' : ''), active: this.activeTab == 1},
-                    {value: 2, text: 'Conta de e-mail'  + (this.isContatoChanged ? ' •' : ''), active: this.activeTab == 2},
-                    {value: 3, text: 'SMTP'  + (this.isSMTPChanged ? ' •' : ''), active: this.activeTab == 3},
-                    {value: 4, text: 'IMAP'  + (this.isIMAPChanged ? ' •' : ''), active: this.activeTab == 4},
+                    // {value: 2, text: 'Conta de e-mail'  + (this.isContatoChanged ? ' •' : ''), active: this.activeTab == 2},
+                    // {value: 3, text: 'SMTP'  + (this.isSMTPChanged ? ' •' : ''), active: this.activeTab == 3},
+                    // {value: 4, text: 'IMAP'  + (this.isIMAPChanged ? ' •' : ''), active: this.activeTab == 4},
                 ]
             }
         },

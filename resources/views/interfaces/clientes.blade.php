@@ -102,7 +102,7 @@
 
         <template v-slot:buttons>
             <button @click="limparFiltros">Limpar</button>
-            <button @click="filtrarContatos">Filtrar</button>
+            <button @click="filtrarClientes">Filtrar</button>
         </template>
 
         <b-row>
@@ -128,7 +128,7 @@
             <button @click="excluirCliente" size="sm" variant="primary">Sim</button>
         </template>
 
-        Deseja realmente excluir o contato?
+        Deseja realmente excluir o cliente?
 
     </c-modal>
 </div>
@@ -247,7 +247,7 @@
                 this.temporaryFilters = JSON.parse(JSON.stringify(this.filters))
                 this.modalFiltro = true
             },
-            filtrarContatos() {
+            filtrarClientes() {
                 this.page = 1
                 this.modalFiltro = false
                 this.filters = JSON.parse(JSON.stringify(this.temporaryFilters))
