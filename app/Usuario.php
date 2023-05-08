@@ -45,6 +45,14 @@ class Usuario extends Model implements AuthenticatableContract, AuthorizableCont
         return $this->hasMany('App\Token');
     }
 
+    public function produtos() {
+        return $this->hasMany('App\Produto');
+    }
+
+    public function estoque() {
+        return $this->hasMany('App\Estoque');
+    }
+
     public function nivelUsuario() {
         return $this->belongsTo('App\NivelUsuario');
     }

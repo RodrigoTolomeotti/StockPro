@@ -18,6 +18,8 @@ class NivelUsuarioSeeder extends Seeder
         $nivel_usuario->telas()->attach(1);
         $nivel_usuario->telas()->attach(2);
         $nivel_usuario->telas()->attach(3);
+        $nivel_usuario->telas()->attach(4);
+        $nivel_usuario->telas()->attach(5);
 
     }
 }

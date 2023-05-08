@@ -29,3 +29,9 @@ $router->get('configuracoes', function () use ($router) {
 $router->get('clientes', function() use ($router) {
     return view('interfaces.clientes');
 });
+$router->get('produtos', function() use ($router) {
+    return view('interfaces.produtos');
+});
+$router->get('tipos_produtos', function() use ($router) {
+    return view('interfaces.tipos_produtos');
+});
