@@ -64,8 +64,8 @@ class ProdutoController extends Controller
     private function getValidation() {
         return [
             'nome'              => ['required', 'string', 'max:128'],
-            'custo'             => ['required', 'integer'],
-            'preco_unitario'    => ['nullable', 'numeric', 'digits_between:1,8'],
+            'custo'             => ['required', 'numeric', 'min:0', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'preco_unitario'    => ['nullable', 'numeric', 'min:1', 'regex:/^\d+(\.\d{1,2})?$/'],
             'tipo_produto_id'   => ['required', 'exists:tipo_produto,id'],
             'descricao'         => ['required', 'string'],
         ];
@@ -125,7 +125,7 @@ class ProdutoController extends Controller
                 throw new Exception('Imagem não encontrada');
             }
 
-            $path = "../public/users/products";
+            $path = "../public/users/products/";
             $file_name = Str::random(25) . ".jpg";
 
             $file = $_FILES['imagem']['tmp_name'];
@@ -151,31 +151,36 @@ class ProdutoController extends Controller
                 break;
             }
 
-            $newWidth = 450;
-            $newHeight = 350;
+            $newWidth = 1920;
+            $newHeight = 1200;
 
             $xPosition = 0;
             $yPosition = 0;
+            
+            if($width_orig > $height_orig){
+                $height = ($width/$width_orig)*$height_orig;
+                // Se altura é maior que largura, dividimos a altura determinada pela original e multiplicamos a largura pelo resultado, para manter a proporção da imagem
+            } elseif($width_orig < $height_orig) {
+                $width = ($height/$height_orig)*$width_orig;
+                } // -> fim if
+            // if ($width > $height) {
+            //     $xPosition = $width/2 - $height/2;
+            //     $width = $height;
+            // }
 
-            if ($width > $height) {
-                $xPosition = $width/2 - $height/2;
-                $width = $height;
-            }
-
-            if ($height > $width) {
-                $yPosition = $height/2 - $width/2;
-                $height = $width;
-            }
+            // if ($height > $width) {
+            //     $yPosition = $height/2 - $width/2;
+            //     $height = $width;
+            // }
 
             $newImage = imagecreatetruecolor($newWidth, $newHeight);
 
             imagecopyresampled($newImage, $image, 0, 0, $xPosition, $yPosition, $newWidth, $newHeight, $width, $height);
 
-            imagejpeg($newImage, $save, 75);
+            imagejpeg($newImage, $save, 100);
 
             if ($produto->imagem) unlink($path . $produto->imagem);
             $produto->imagem = $file_name;
-            // dd($produto->imagem);
             $produto->save();
 
             return response()->json([

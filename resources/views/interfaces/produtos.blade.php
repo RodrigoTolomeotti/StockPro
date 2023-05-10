@@ -7,7 +7,7 @@
 
 @section('interface')
 <div class="d-flex flex-column flex-grow-1">
-    <c-card reference="Climb > produtos" title="produtos">
+    <c-card reference="StockPro > produtos" title="produtos">
         <template slot="icons">
             <i @click="novoProduto" class="fas fa-plus fa-lg"></i>
             <i @click="abrirFiltros" class="fas fa-filter fa-lg">
@@ -30,9 +30,7 @@
                 </div>
             </template>
         </c-list>
-
         <span class="card-divisor mb-3"></span>
-
         <div class="d-flex justify-content-between">
             <span style="font-size: .8em;font-weight: bold;">
                 @{{(page - 1) * limit + 1}} - @{{page * limit > totalRows ? totalRows : page * limit}} / @{{totalRows}}
@@ -58,31 +56,51 @@
         <b-row>
             <b-col cols="6">
                 <b-form-group label-size="sm" v-for="field, i in commonFields" :key="i" :label="field.name" :label-for="field.attribute">
+                    <b-form-select
+                        v-if="field.attribute === 'tipo_produto_id'"
+                        id="tipo_produto_id"
+                        v-model="produto['tipo_produto_id']"
+                        :options="optionsTiposProdutos">
+                        <template v-slot:first>
+                            <option :value="null">Selecione um</option>
+                        </template>
+                    </b-form-select>
+                    <b-form-select
+                        v-else-if="field.attribute === 'fornecedor_id'"
+                        id="fornecedor_id"
+                        v-model="produto['fornecedor_id']"
+                        :options="optionsFornecedores">
+                        <template v-slot:first>
+                            <option :value="null">Selecione um</option>
+                        </template>
+                    </b-form-select>
                     <b-form-input
-                        v-if="field.attribute != 'preco_unitario'"
-                        id="field.attribute"
-                        v-model="produto[field.attribute]"
-                        type="text"
-                    ></b-form-input>
-                    <b-form-input
-                        v-if="field.attribute == 'preco_unitario'"
+                        v-else-if="field.attribute === 'preco_unitario'"
                         id="field.attribute"
                         v-model="produto[field.attribute]"
                         :maxlength="18"
-                        @keypress="isNumber($event)"
+                        type="number"
+                    ></b-form-input>
+                    <b-form-input
+                        v-else
+                        id="field.attribute"
+                        v-model="produto[field.attribute]"
                         type="text"
                     ></b-form-input>
                 </b-form-group>
+                <!-- <b-form-group label-size="sm" label="Tipo de Produto" label-for="tipo_produto_id">
+                    
+                </b-form-group> -->
             </b-col>
             <b-col cols="6">                
-                <div style="padding: 20px;background: #f5f7fb;">
+                <div style="padding: .5em;background: #f5f7fb;">
                     <b-form-group label-size="sm">
                         <b-input-group>
-                        <div class="user-image"
-                            :class="{'user-image-default': !imagem}"
+                        <div class="product-image"
+                            :class="{'product-image-default': !imagem}"
                             :style="imageStyleProduto">
-                            <span v-if="!imagem" class="user-image-letter">@{{produto.nome ? produto.nome[0].toUpperCase() : 'Novo Produto'}}</span>
-                            <span @click="$refs.imagem.click()" class="user-image-edit"><i class="fas fa-pen"></i></span>
+                            <span v-if="!imagem" class="product-image-letter">@{{produto.nome ? produto.nome[0].toUpperCase() : 'Novo Produto'}}</span>
+                            <span v-if="produto.id" @click="$refs.imagem.click()" class="product-image-edit"><i class="fas fa-pen"></i></span>
                             <input ref="imagem" type="file" accept="image/png,image/jpeg" @change="uploadImagemProduto($event)">
                         </div>
                         </b-input-group>
@@ -147,7 +165,8 @@
                     {name: 'Custo', attribute: 'custo'},
                     {name: 'Preço Unitário', attribute: 'preco_unitario'},
                     {name: 'Tipo de Produto', attribute: 'tipo_produto_id'},
-                    {name: 'Descrição', attribute: 'descricao'}
+                    {name: 'Fornecedor', attribute: 'fornecedor_id'},
+                    {name: 'Descrição', attribute: 'descricao'}                    
                 ],
                 excluirModal: false,
                 idProdutoExcluir: false,
@@ -156,6 +175,8 @@
                     nome: null
                 },
                 imagem: null,
+                tipos_produtos: [],
+                fornecedores: []
             }
         },
         methods: {
@@ -282,6 +303,7 @@
                         this.produto.imagem = this.imagem;
                     }
                     store.alerts.push({text:'Imagem alterada com sucesso', variant:'success'})
+                    this.loadProduto()
                 })
 
             },
@@ -290,7 +312,17 @@
                     errors[k].reverse().forEach(err => {
                         store.alerts.push({text: err, variant: 'danger'})
                     })
-                }, 5000)
+                }, 5000);
+            },
+            loadTiposProdutos() {
+                axios.get('api/tipo-produto').then(res => {
+                    this.tipos_produtos = res.data.data;
+                })
+            },
+            loadFornecedores() {
+                axios.get('api/fornecedor').then(res => {
+                    this.fornecedores = res.data.data;
+                })
             }
         },
         watch: {
@@ -304,12 +336,26 @@
             },
             imageStyleProduto() {
                 return {
-                    'background-image': this.imagem ? 'url(\'' + store.baseUrl + '/users/products' + this.imagem + '\')' : 'none'
+                    'background-image': this.imagem ? 'url(\'' + store.baseUrl + '/users/products/' + this.imagem + '\')' : 'none'
                 }
             },
+            optionsTiposProdutos() {
+                return this.tipos_produtos.map(o => ({
+                    value: o.id,
+                    text: o.nome
+                }))
+            },
+            optionsFornecedores() {
+                return this.fornecedores.map(o => ({
+                    value: o.id,
+                    text: o.nome
+                }))
+            }
         },
         created() {
-            this.loadProduto()
+            this.loadProduto(),
+            this.loadTiposProdutos(),
+            this.loadFornecedores()
         },
         template: `@yield('interface')`
     })
@@ -319,7 +365,7 @@
 
 @push('styles')
 <style>
-.user-image {
+.product-image {
     width: 100%;
     height: 410px;
     border-radius: 2%;
@@ -328,19 +374,19 @@
     background-size: cover;
 }
 
-.user-image-default {
+.product-image-default {
     background: #65a2ff;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.user-image-default .user-image-letter {
+.product-image-default .product-image-letter {
     color: #fff;
     font-size: 3em;
 }
 
-.user-image .user-image-edit {
+.product-image .product-image-edit {
     width: 50px;
     height: 50px;
     background: #353535;
@@ -357,11 +403,11 @@
     transition: .2s;
 }
 
-.user-image .user-image-edit:hover {
+.product-image .product-image-edit:hover {
     background: #222;
 }
 
-.user-image input {
+.product-image input {
     display: none;
 }
 </style>

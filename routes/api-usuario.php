@@ -80,6 +80,25 @@ $router->group(['prefix' => 'produto', 'middleware' => 'auth'], function () use 
 
 });
 
+$router->group(['prefix' => 'tipo-produto', 'middleware' => 'auth'], function () use ($router) {
+
+    $router->get('/', 'TipoProdutoController@getAll');
+    $router->post('/', 'TipoProdutoController@create');
+    $router->put('/{id}', 'TipoProdutoController@update');
+    $router->delete('/{id}', 'TipoProdutoController@delete');
+
+    $router->post('/imagem', 'TipoProdutoController@uploadImagem');
+
+});
+
+$router->group(['prefix' => 'fornecedor', 'middleware' => 'auth'], function () use ($router) {
+
+    $router->get('/', 'FornecedorController@getAll');
+    $router->post('/', 'FornecedorController@create');
+    $router->put('/{id}', 'FornecedorController@update');
+    $router->delete('/{id}', 'FornecedorController@delete');
+});
+
 $router->group(['prefix' => 'notificacao', 'middleware' => 'auth'], function () use ($router) {
 
     $router->get('/', 'NotificacaoController@getAll');

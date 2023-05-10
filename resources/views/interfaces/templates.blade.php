@@ -13,7 +13,7 @@
 @section('interface')
     <div class="d-flex flex-column flex-grow-1">
 
-        <c-card reference="Climb > Campanhas" title="Campanhas">
+        <c-card reference="StockPro > Campanhas" title="Campanhas">
 
             <template slot="icons">
                 <i class="fas fa-plus"></i>

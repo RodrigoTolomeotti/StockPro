@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Cliente;
+use App\Fornecedor;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 
-class ClienteController extends Controller
+class FornecedorController extends Controller
 {
 
     private $user = null;
@@ -23,7 +23,7 @@ class ClienteController extends Controller
 
         try {
 
-            $query = $this->user->clientes();
+            $query = $this->user->fornecedores();
 
             if ($request->has('nome') && $request->input('nome') != '') {
                 $query->where('nome', 'like', '%' . $request->input('nome') . '%');
@@ -63,11 +63,10 @@ class ClienteController extends Controller
     }
     private function getValidation() {
         return [
-            'nome'      =>  ['required', 'string', 'max:256'],
-            'cpf_cnpj'  =>  ['required', 'string', 'max:14'],
-            'telefone'  =>  ['nullable', 'numeric', 'digits_between:1,11'],
-            'email'     =>  ['required', 'email:rfc,dns', 'max:256', 'unique:cliente']
-            
+			'nome'			=>      ['required', 'string', 'max:256'],
+			'telefone'		=>      ['required', 'numeric', 'digits_between:1,14'],
+			'email'			=>      ['required', 'email', 'max:256', 'regex:/(.+)@(.+)\.(.+)/i'],
+			'cpf_cnpj'		=>      ['required', 'max:14'],
         ];
     }
 
@@ -75,11 +74,17 @@ class ClienteController extends Controller
         try {
             $this->validate($request, $this->getValidation());
 
+            $exists = Fornecedor::findByFornecedorNome(Auth::user()->id, $request->input('nome'));
+            if ($exists) {
+                throw ValidationException::withMessages(['exists' => 'Fornecedor já cadastrado 😢']);
+            }
+
             if(!validar_cnpj($request->input('cpf_cnpj')) && !validar_cpf($request->input('cpf_cnpj'))){
                 return ['errors' => ['cpf_cnpj' => ['Campo CPF/CNPJ inválido']]];
             }
-            $clientes = $this->user->clientes()->create($request->input());
-            return ['data' => $clientes];
+
+            $fornecedor = $this->user->fornecedores()->create($request->input());
+            return ['data' => $fornecedor];
 
         } catch (ValidationException | Exception $e) {
 
@@ -92,14 +97,18 @@ class ClienteController extends Controller
         try {
             $this->validate($request, $this->getValidation());
 
-            $clientes = Cliente::find($id);
+            $exists = Fornecedor::findByFornecedorNome(Auth::user()->id, $request->input('nome'));
+            if ($exists) {
+                throw ValidationException::withMessages(['exists' => 'Já existe um Fornecedor com este nome 😢']);
+            }
+            $fornecedor = Fornecedor::find($id);
 
-            if (!$clientes) return [
-                'errors' => ['Cliente não encontrado']
+            if (!$fornecedor) return [
+                'errors' => ['Fornecedor não encontrado']
             ];
-            $clientes->update($request->input());
+            $fornecedor->update($request->input());
 
-            return ['data' => $clientes];
+            return ['data' => $fornecedor];
 
         } catch (ValidationException | Exception $e) {
 
@@ -109,10 +118,10 @@ class ClienteController extends Controller
 
     public function delete(Request $request, $id) {
 
-        $clientes = $this->user->clientes()->find($id);
+        $fornecedor = $this->user->fornecedores()->find($id);
 
         try{
-            $clientes->delete();
+            $fornecedor->delete();
         }catch(\Exception $e){
             return ['data' => false];
         }

@@ -1,21 +1,21 @@
 @extends('layouts.main')
 
-@section('title', 'Grupos de contato')
+@section('title', 'Tipos de Produtos')
 
 @include('components.c-list')
 @include('components.c-card')
 
 @section('interface')
 <div class="d-flex flex-column flex-grow-1">
-    <c-card reference="StockPro > Grupos de contato" title="Grupos de contato">
+    <c-card reference="StockPro > Tipos de Produtos" title="Tipos de Produtos">
         <template slot="icons">
-            <i @click="novoGrupoContato" class="fas fa-plus fa-lg"></i>
+            <i @click="novoTipoProduto" class="fas fa-plus fa-lg"></i>
             <i @click="abrirFiltros" class="fas fa-filter fa-lg">
                 <span v-if="totalFilters" class="card-icons-alert">@{{totalFilters}}</span>
             </i>
         </template>
 
-        <c-list :items="gruposContato" :loading="loading" class="mb-3">
+        <c-list :items="tiposProdutos" :loading="loading" class="mb-3">
             <template v-slot:items="item">
                 <div class="d-flex justify-content-between w-100">
                     <div class="d-flex flex-column">
@@ -24,8 +24,8 @@
                         </div>
                     </div>
                     <div class="list-icons">
-                        <i @click="editarGrupoContato(item.data)" class="fas fa-pen"></i>
-                        <i @click="idGrupoContatoExcluir = item.data.id; excluirModal = true" class="fas fa-trash-alt"></i>
+                        <i @click="editarTipoProduto(item.data)" class="fas fa-pen"></i>
+                        <i @click="idTipoProdutoExcluir = item.data.id; excluirModal = true" class="fas fa-trash-alt"></i>
                     </div>
                 </div>
             </template>
@@ -49,10 +49,10 @@
         </div>
     </c-card>
 
-    <c-modal title="Grupo de contatos" v-model="modalGrupoContato" size="md">
+    <c-modal title="Tipo de Produtos" v-model="modalTipoProduto" size="md">
 
         <template v-slot:buttons>
-            <button @click="salvarGrupoContato">Salvar</button>
+            <button @click="salvarTipoProduto">Salvar</button>
         </template>
 
         <b-row>
@@ -61,7 +61,7 @@
                 <b-form-group label-size="sm" label="Nome" label-for="nome">
                     <b-form-input
                         id="nome"
-                        v-model="grupoContato.nome"
+                        v-model="tipoProduto.nome"
                         type="text"
                     ></b-form-input>
                 </b-form-group>
@@ -94,11 +94,11 @@
 
     </c-modal>
 
-    <c-modal v-model="excluirModal" title="Excluir Grupo Contato" size="md">
+    <c-modal v-model="excluirModal" title="Excluir Tipo de Produto" size="md">
 
         <template v-slot:buttons>
             <button @click="excluirModal = false" size="sm">Não</button>
-            <button @click="excluirGrupoContato" size="sm" variant="primary">Sim</button>
+            <button @click="excluirTipoProduto" size="sm" variant="primary">Sim</button>
         </template>
 
         Deseja realmente excluir o contato?
@@ -112,19 +112,19 @@
     Vue.component('interface', {
         data() {
             return {
-                gruposContato: [],
+                tiposProdutos: [],
                 limit: 15,
                 page: 1,
                 totalRows: 0,
                 loading: false,
-                modalGrupoContato: false,
+                modalTipoProduto: false,
                 modalFiltro: false,
-                grupoContato: {},
+                tipoProduto: {},
                 commonFields: [
                     {name: 'Nome', attribute: 'nome'}
                 ],
                 excluirModal: false,
-                idGrupoContatoExcluir: false,
+                idTipoProdutoExcluir: false,
                 temporaryFilters: {},
                 filters: {
                     nome: null
@@ -132,9 +132,9 @@
             }
         },
         methods: {
-            loadGrupoContato() {
+            loadtipoProduto() {
 
-                axios.get('api/grupo-contato', {
+                axios.get('api/tipo-produto', {
                     params: {
                         limit: this.limit,
                         offset: this.page * this.limit - this.limit,
@@ -143,7 +143,7 @@
                     }
                 }).then(res => {
 
-                    this.gruposContato = res.data.data
+                    this.tiposProdutos = res.data.data
 
                     this.totalRows = res.data.totalRows
 
@@ -151,35 +151,35 @@
 
                 })
             },
-            novoGrupoContato() {
-                this.grupoContato = {
+            novoTipoProduto() {
+                this.tipoProduto = {
                     nome: null
                 }
-                this.modalGrupoContato = true
+                this.modalTipoProduto = true
             },
-            editarGrupoContato(grupoContato) {
-                this.grupoContato = JSON.parse(JSON.stringify(grupoContato))
-                this.modalGrupoContato = true
+            editarTipoProduto(tipoProduto) {
+                this.tipoProduto = JSON.parse(JSON.stringify(tipoProduto))
+                this.modalTipoProduto = true
             },
-            excluirGrupoContato() {
+            excluirTipoProduto() {
 
-                axios.delete('api/grupo-contato/' + this.idGrupoContatoExcluir).then(res => {
+                axios.delete('api/tipo-produto/' + this.idTipoProdutoExcluir).then(res => {
                     this.excluirModal = false
-                    this.loadGrupoContato()
+                    this.loadtipoProduto()
 
                     if(res.data.data){
-                        store.alerts.push({text: 'Grupo de contato excluído com sucesso', variant:'success'})
+                        store.alerts.push({text: 'Tipo de Produto excluído com sucesso', variant:'success'})
                     }else{
-                        store.alerts.push({text: 'Erro ao excluir Grupo de contato', variant:'danger'})
+                        store.alerts.push({text: 'Erro ao excluir Tipo de Produto', variant:'danger'})
                     }
                 })
 
             },
-            salvarGrupoContato() {
+            salvarTipoProduto() {
 
-                if (this.grupoContato.id) {
-                    axios.put('api/grupo-contato/' + this.grupoContato.id, {
-                        ...this.grupoContato
+                if (this.tipoProduto.id) {
+                    axios.put('api/tipo-produto/' + this.tipoProduto.id, {
+                        ...this.tipoProduto
                     }).then(res => {
                         if (res.data.errors) {
                             Object.keys(res.data.errors).forEach(k => {
@@ -189,14 +189,14 @@
                             })
                             return;
                         }
-                        this.modalGrupoContato = false
-                        this.loadGrupoContato()
-                        store.alerts.push({text: 'Grupo de contato alterado com sucesso', variant:'success'})
+                        this.modalTipoProduto = false
+                        this.loadtipoProduto()
+                        store.alerts.push({text: 'Tipo de Produto alterado com sucesso', variant:'success'})
                     })
 
                 } else {
-                    axios.post('api/grupo-contato', {
-                        ...this.grupoContato
+                    axios.post('api/tipo-produto', {
+                        ...this.tipoProduto
                     }).then(res => {
                         if (res.data.errors) {
                             Object.keys(res.data.errors).forEach(k => {
@@ -206,9 +206,9 @@
                             })
                             return;
                         }
-                        this.modalGrupoContato = false
-                        this.loadGrupoContato()
-                        store.alerts.push({text: 'Grupo de contatos incluído com sucesso', variant:'success'})
+                        this.modalTipoProduto = false
+                        this.loadtipoProduto()
+                        store.alerts.push({text: 'Tipo de Produtos incluído com sucesso', variant:'success'})
                     })
                 }
             },
@@ -220,18 +220,18 @@
                 this.page = 1
                 this.modalFiltro = false
                 this.filters = JSON.parse(JSON.stringify(this.temporaryFilters))
-                this.loadGrupoContato()
+                this.loadtipoProduto()
             },
             limparFiltros() {
                 Object.keys(this.temporaryFilters).forEach(k => {
                     this.temporaryFilters[k] = null
-                    this.loadGrupoContato()
+                    this.loadtipoProduto()
                 })
             }
         },
         watch: {
             page() {
-                this.loadGrupoContato()
+                this.loadtipoProduto()
             }
         },
         computed: {
@@ -240,7 +240,7 @@
             }
         },
         created() {
-            this.loadGrupoContato()
+            this.loadtipoProduto()
         },
         template: `@yield('interface')`
     })

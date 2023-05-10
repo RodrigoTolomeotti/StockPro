@@ -4,22 +4,30 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class TipoProduto extends Model
+class Fornecedor extends Model
 {
     const CREATED_AT = 'data_criacao';
     const UPDATED_AT = 'data_atualizacao';
 
-    public $table = 'tipo_produto';
+    public $table = 'fornecedor';
 
     protected $fillable = [
         'nome',
+        'telefone',
+        'email',
+        'cpf_cnpj',
+        'produto_id'
     ];
 
     public function usuario() {
         return $this->belongsTo('App\Usuario');
     }
 
-    public static function findByTipoProdutoNome($usuario, $nome, $columns = ['*']) {
+    public function produto() {
+        return $this->belongsTo('App\Produto');
+    }
+
+    public static function findByFornecedorNome($usuario, $nome, $columns = ['*']) {
 
         $query = self::query();
 

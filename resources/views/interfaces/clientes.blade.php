@@ -7,7 +7,7 @@
 
 @section('interface')
 <div class="d-flex flex-column flex-grow-1">
-    <c-card reference="Climb > Clientes" title="Clientes">
+    <c-card reference="StockPro > Clientes" title="Clientes">
         <template slot="icons">
             <i @click="novoCliente" class="fas fa-plus fa-lg"></i>
             <i @click="abrirFiltros" class="fas fa-filter fa-lg">

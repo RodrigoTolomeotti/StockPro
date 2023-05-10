@@ -12,7 +12,7 @@
             <b-col>
 
                 <c-card
-                    reference="Climb > Configurações"
+                    reference="StockPro > Configurações"
                     class="mb-2"
                     >
 

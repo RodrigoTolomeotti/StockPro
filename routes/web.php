@@ -32,6 +32,9 @@ $router->get('clientes', function() use ($router) {
 $router->get('produtos', function() use ($router) {
     return view('interfaces.produtos');
 });
-$router->get('tipos_produtos', function() use ($router) {
-    return view('interfaces.tipos_produtos');
+$router->get('tipos-produtos', function() use ($router) {
+    return view('interfaces.tiposProdutos');
+});
+$router->get('fornecedores', function() use ($router) {
+    return view('interfaces.fornecedores');
 });

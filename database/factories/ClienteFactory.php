@@ -19,7 +19,6 @@ $factory->define(App\Cliente::class, function (Faker\Generator $faker) {
         'nome' => $faker->name,
         'telefone' => null,
         'email' => $faker->email,
-        'endereco' => $faker->address,
-        'cpf_cnpj' => '12345678912345'
+        'endereco' => $faker->address
     ];
 });

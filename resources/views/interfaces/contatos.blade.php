@@ -9,7 +9,7 @@
 @section('interface')
     <div class="d-flex flex-column flex-grow-1">
 
-        <c-card reference="Climb > Contatos" title="Contatos">
+        <c-card reference="StockPro > Contatos" title="Contatos">
 
             <template slot="icons">
                 <i @click="modalExportar = true" class="fa fa-file-export fa-lg" title="Exportar contatos"></i>

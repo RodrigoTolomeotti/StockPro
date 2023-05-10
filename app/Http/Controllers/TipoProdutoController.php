@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Cliente;
+use App\TipoProduto;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 
-class ClienteController extends Controller
+class TipoProdutoController extends Controller
 {
 
     private $user = null;
@@ -23,7 +23,7 @@ class ClienteController extends Controller
 
         try {
 
-            $query = $this->user->clientes();
+            $query = $this->user->tiposProdutos();
 
             if ($request->has('nome') && $request->input('nome') != '') {
                 $query->where('nome', 'like', '%' . $request->input('nome') . '%');
@@ -63,11 +63,7 @@ class ClienteController extends Controller
     }
     private function getValidation() {
         return [
-            'nome'      =>  ['required', 'string', 'max:256'],
-            'cpf_cnpj'  =>  ['required', 'string', 'max:14'],
-            'telefone'  =>  ['nullable', 'numeric', 'digits_between:1,11'],
-            'email'     =>  ['required', 'email:rfc,dns', 'max:256', 'unique:cliente']
-            
+            'nome' =>       ['required', 'string', 'max:256'],
         ];
     }
 
@@ -75,11 +71,12 @@ class ClienteController extends Controller
         try {
             $this->validate($request, $this->getValidation());
 
-            if(!validar_cnpj($request->input('cpf_cnpj')) && !validar_cpf($request->input('cpf_cnpj'))){
-                return ['errors' => ['cpf_cnpj' => ['Campo CPF/CNPJ inválido']]];
+            $exists = TipoProduto::findByTipoProdutoNome(Auth::user()->id, $request->input('nome'));
+            if ($exists) {
+                throw ValidationException::withMessages(['exists' => 'Tipo de Produto já cadastrado 😢']);
             }
-            $clientes = $this->user->clientes()->create($request->input());
-            return ['data' => $clientes];
+            $tipoProduto = $this->user->tiposProdutos()->create($request->input());
+            return ['data' => $tipoProduto];
 
         } catch (ValidationException | Exception $e) {
 
@@ -92,14 +89,18 @@ class ClienteController extends Controller
         try {
             $this->validate($request, $this->getValidation());
 
-            $clientes = Cliente::find($id);
+            $exists = TipoProduto::findByTipoProdutoNome(Auth::user()->id, $request->input('nome'));
+            if ($exists) {
+                throw ValidationException::withMessages(['exists' => 'Já existe um Tipo de Produto com este nome 😢']);
+            }
+            $tipoProduto = TipoProduto::find($id);
 
-            if (!$clientes) return [
-                'errors' => ['Cliente não encontrado']
+            if (!$tipoProduto) return [
+                'errors' => ['Tipo de Produto não encontrado']
             ];
-            $clientes->update($request->input());
+            $tipoProduto->update($request->input());
 
-            return ['data' => $clientes];
+            return ['data' => $tipoProduto];
 
         } catch (ValidationException | Exception $e) {
 
@@ -109,10 +110,10 @@ class ClienteController extends Controller
 
     public function delete(Request $request, $id) {
 
-        $clientes = $this->user->clientes()->find($id);
+        $tipoProduto = $this->user->tiposProdutos()->find($id);
 
         try{
-            $clientes->delete();
+            $tipoProduto->delete();
         }catch(\Exception $e){
             return ['data' => false];
         }

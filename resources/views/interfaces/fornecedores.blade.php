@@ -1,21 +1,21 @@
 @extends('layouts.main')
 
-@section('title', 'Grupos de contato')
+@section('title', 'Fornecedores')
 
 @include('components.c-list')
 @include('components.c-card')
 
 @section('interface')
 <div class="d-flex flex-column flex-grow-1">
-    <c-card reference="StockPro > Grupos de contato" title="Grupos de contato">
+    <c-card reference="StockPro > Fornecedores" title="Fornecedores">
         <template slot="icons">
-            <i @click="novoGrupoContato" class="fas fa-plus fa-lg"></i>
+            <i @click="novoFornecedor" class="fas fa-plus fa-lg"></i>
             <i @click="abrirFiltros" class="fas fa-filter fa-lg">
                 <span v-if="totalFilters" class="card-icons-alert">@{{totalFilters}}</span>
             </i>
         </template>
 
-        <c-list :items="gruposContato" :loading="loading" class="mb-3">
+        <c-list :items="fornecedores" :loading="loading" class="mb-3">
             <template v-slot:items="item">
                 <div class="d-flex justify-content-between w-100">
                     <div class="d-flex flex-column">
@@ -24,8 +24,8 @@
                         </div>
                     </div>
                     <div class="list-icons">
-                        <i @click="editarGrupoContato(item.data)" class="fas fa-pen"></i>
-                        <i @click="idGrupoContatoExcluir = item.data.id; excluirModal = true" class="fas fa-trash-alt"></i>
+                        <i @click="editarFornecedor(item.data)" class="fas fa-pen"></i>
+                        <i @click="idFornecedorExcluir = item.data.id; excluirModal = true" class="fas fa-trash-alt"></i>
                     </div>
                 </div>
             </template>
@@ -49,10 +49,10 @@
         </div>
     </c-card>
 
-    <c-modal title="Grupo de contatos" v-model="modalGrupoContato" size="md">
+    <c-modal title="Fornecedores" v-model="modalFornecedor" size="md">
 
         <template v-slot:buttons>
-            <button @click="salvarGrupoContato">Salvar</button>
+            <button @click="salvarFornecedor">Salvar</button>
         </template>
 
         <b-row>
@@ -61,11 +61,38 @@
                 <b-form-group label-size="sm" label="Nome" label-for="nome">
                     <b-form-input
                         id="nome"
-                        v-model="grupoContato.nome"
+                        v-model="fornecedor.nome"
                         type="text"
                     ></b-form-input>
                 </b-form-group>
-
+                <b-form-group label-size="sm" label="Telefone" label-for="telefone">
+                    <b-form-input
+                        id="nome"
+                        v-model="fornecedor.telefone"
+                        type="text"
+                    ></b-form-input>
+                </b-form-group>
+                <b-form-group label-size="sm" label="Endereco" label-for="endereco">
+                    <b-form-input
+                        id="nome"
+                        v-model="fornecedor.endereco"
+                        type="text"
+                    ></b-form-input>
+                </b-form-group>
+                <b-form-group label-size="sm" label="E-mail" label-for="email">
+                    <b-form-input
+                        id="nome"
+                        v-model="fornecedor.email"
+                        type="text"
+                    ></b-form-input>
+                </b-form-group>
+                <b-form-group label-size="sm" label="CPF/CNPJ" label-for="cpf_cnpj">
+                    <b-form-input
+                        id="nome"
+                        v-model="fornecedor.cpf_cnpj"
+                        type="text"
+                    ></b-form-input>
+                </b-form-group>
             </b-col>
         </b-row>
 
@@ -75,7 +102,7 @@
 
         <template v-slot:buttons>
             <button @click="limparFiltros">Limpar</button>
-            <button @click="filtrarContatos">Filtrar</button>
+            <button @click="filtrarFornecedores">Filtrar</button>
         </template>
 
         <b-row>
@@ -94,14 +121,14 @@
 
     </c-modal>
 
-    <c-modal v-model="excluirModal" title="Excluir Grupo Contato" size="md">
+    <c-modal v-model="excluirModal" title="Excluir Fornecedor" size="md">
 
         <template v-slot:buttons>
             <button @click="excluirModal = false" size="sm">Não</button>
-            <button @click="excluirGrupoContato" size="sm" variant="primary">Sim</button>
+            <button @click="excluirFornecedor" size="sm" variant="primary">Sim</button>
         </template>
 
-        Deseja realmente excluir o contato?
+        Deseja realmente excluir o fornecedor?
 
     </c-modal>
 </div>
@@ -112,19 +139,23 @@
     Vue.component('interface', {
         data() {
             return {
-                gruposContato: [],
+                fornecedores: [],
                 limit: 15,
                 page: 1,
                 totalRows: 0,
                 loading: false,
-                modalGrupoContato: false,
+                modalFornecedor: false,
                 modalFiltro: false,
-                grupoContato: {},
+                fornecedor: {},
                 commonFields: [
-                    {name: 'Nome', attribute: 'nome'}
+                    {name: 'Nome', attribute: 'nome'},
+                    {name: 'E-mail', attribute: 'email'},
+                    {name: 'Telefone', attribute: 'telefone'},
+                    {name: 'Endereço', attribute: 'endereco'},
+                    {name: 'CPF/CNPJ', attribute: 'cpf_cnpj'}
                 ],
                 excluirModal: false,
-                idGrupoContatoExcluir: false,
+                idFornecedorExcluir: false,
                 temporaryFilters: {},
                 filters: {
                     nome: null
@@ -132,9 +163,9 @@
             }
         },
         methods: {
-            loadGrupoContato() {
+            loadFornecedor() {
 
-                axios.get('api/grupo-contato', {
+                axios.get('api/fornecedor', {
                     params: {
                         limit: this.limit,
                         offset: this.page * this.limit - this.limit,
@@ -143,7 +174,7 @@
                     }
                 }).then(res => {
 
-                    this.gruposContato = res.data.data
+                    this.fornecedores = res.data.data
 
                     this.totalRows = res.data.totalRows
 
@@ -151,35 +182,35 @@
 
                 })
             },
-            novoGrupoContato() {
-                this.grupoContato = {
+            novoFornecedor() {
+                this.fornecedor = {
                     nome: null
                 }
-                this.modalGrupoContato = true
+                this.modalFornecedor = true
             },
-            editarGrupoContato(grupoContato) {
-                this.grupoContato = JSON.parse(JSON.stringify(grupoContato))
-                this.modalGrupoContato = true
+            editarFornecedor(Fornecedor) {
+                this.fornecedor = JSON.parse(JSON.stringify(Fornecedor))
+                this.modalFornecedor = true
             },
-            excluirGrupoContato() {
+            excluirFornecedor() {
 
-                axios.delete('api/grupo-contato/' + this.idGrupoContatoExcluir).then(res => {
+                axios.delete('api/fornecedor/' + this.idFornecedorExcluir).then(res => {
                     this.excluirModal = false
-                    this.loadGrupoContato()
+                    this.loadFornecedor()
 
                     if(res.data.data){
-                        store.alerts.push({text: 'Grupo de contato excluído com sucesso', variant:'success'})
+                        store.alerts.push({text: 'Fornecedor excluído com sucesso', variant:'success'})
                     }else{
-                        store.alerts.push({text: 'Erro ao excluir Grupo de contato', variant:'danger'})
+                        store.alerts.push({text: 'Erro ao excluir Fornecedor', variant:'danger'})
                     }
                 })
 
             },
-            salvarGrupoContato() {
+            salvarFornecedor() {
 
-                if (this.grupoContato.id) {
-                    axios.put('api/grupo-contato/' + this.grupoContato.id, {
-                        ...this.grupoContato
+                if (this.fornecedor.id) {
+                    axios.put('api/fornecedor/' + this.fornecedor.id, {
+                        ...this.fornecedor
                     }).then(res => {
                         if (res.data.errors) {
                             Object.keys(res.data.errors).forEach(k => {
@@ -189,14 +220,14 @@
                             })
                             return;
                         }
-                        this.modalGrupoContato = false
-                        this.loadGrupoContato()
-                        store.alerts.push({text: 'Grupo de contato alterado com sucesso', variant:'success'})
+                        this.modalFornecedor = false
+                        this.loadFornecedor()
+                        store.alerts.push({text: 'Fornecedor alterado com sucesso', variant:'success'})
                     })
 
                 } else {
-                    axios.post('api/grupo-contato', {
-                        ...this.grupoContato
+                    axios.post('api/fornecedor', {
+                        ...this.fornecedor
                     }).then(res => {
                         if (res.data.errors) {
                             Object.keys(res.data.errors).forEach(k => {
@@ -206,9 +237,9 @@
                             })
                             return;
                         }
-                        this.modalGrupoContato = false
-                        this.loadGrupoContato()
-                        store.alerts.push({text: 'Grupo de contatos incluído com sucesso', variant:'success'})
+                        this.modalFornecedor = false
+                        this.loadFornecedor()
+                        store.alerts.push({text: 'Fornecedor incluído com sucesso', variant:'success'})
                     })
                 }
             },
@@ -216,22 +247,22 @@
                 this.temporaryFilters = JSON.parse(JSON.stringify(this.filters))
                 this.modalFiltro = true
             },
-            filtrarContatos() {
+            filtrarFornecedores() {
                 this.page = 1
                 this.modalFiltro = false
                 this.filters = JSON.parse(JSON.stringify(this.temporaryFilters))
-                this.loadGrupoContato()
+                this.loadFornecedor()
             },
             limparFiltros() {
                 Object.keys(this.temporaryFilters).forEach(k => {
                     this.temporaryFilters[k] = null
-                    this.loadGrupoContato()
+                    this.loadFornecedor()
                 })
             }
         },
         watch: {
             page() {
-                this.loadGrupoContato()
+                this.loadFornecedor()
             }
         },
         computed: {
@@ -240,7 +271,7 @@
             }
         },
         created() {
-            this.loadGrupoContato()
+            this.loadFornecedor()
         },
         template: `@yield('interface')`
     })
