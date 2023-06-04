@@ -82,15 +82,20 @@
                         type="number"
                     ></b-form-input>
                     <b-form-input
+                        v-else-if="field.attribute === 'quantidade'"
+                        id="field.attribute"
+                        v-model="produto[field.attribute]"
+                        :maxlength="18"
+                        type="number"
+                        readonly="true"
+                    ></b-form-input>
+                    <b-form-input
                         v-else
                         id="field.attribute"
                         v-model="produto[field.attribute]"
                         type="text"
                     ></b-form-input>
                 </b-form-group>
-                <!-- <b-form-group label-size="sm" label="Tipo de Produto" label-for="tipo_produto_id">
-                    
-                </b-form-group> -->
             </b-col>
             <b-col cols="6">                
                 <div style="padding: .5em;background: #f5f7fb;">
@@ -164,9 +169,10 @@
                     {name: 'Nome', attribute: 'nome'},
                     {name: 'Custo', attribute: 'custo'},
                     {name: 'Preço Unitário', attribute: 'preco_unitario'},
+                    {name: 'Quantidade Disponível', attribute: 'quantidade'},
                     {name: 'Tipo de Produto', attribute: 'tipo_produto_id'},
                     {name: 'Fornecedor', attribute: 'fornecedor_id'},
-                    {name: 'Descrição', attribute: 'descricao'}                    
+                    {name: 'Descrição', attribute: 'descricao'}
                 ],
                 excluirModal: false,
                 idProdutoExcluir: false,

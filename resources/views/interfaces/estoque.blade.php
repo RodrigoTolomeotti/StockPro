@@ -123,7 +123,7 @@
             <button @click="excluirTipoProduto" size="sm" variant="primary">Sim</button>
         </template>
 
-        Deseja realmente excluir o contato?
+        Deseja realmente excluir o estoque?
 
     </c-modal>
 </div>

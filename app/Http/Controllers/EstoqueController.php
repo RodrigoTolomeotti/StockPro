@@ -113,8 +113,11 @@ class EstoqueController extends Controller
 
         $estoque = $this->user->estoque()->find($id);
 
-        try{
+        try{            
+            $produto = Produto::find($estoque->produto_id);
+            $produto->quantidade = $produto->quantidade - $estoque->quantidade;
             $estoque->delete();
+            $produto->save();
         }catch(\Exception $e){
             return ['data' => false];
         }
