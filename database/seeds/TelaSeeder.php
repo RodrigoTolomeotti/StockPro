@@ -18,5 +18,6 @@ class TelaSeeder extends Seeder
         Tela::create(['id' => '4', 'nome' => 'Produtos', 'url' => 'produtos', 'menu_destino' => '1', 'icone_classe' => 'fab fa-product-hunt']);
         Tela::create(['id' => '5', 'nome' => 'Tipos de Produtos', 'url' => 'tipos-produtos', 'menu_destino' => '1', 'icone_classe' => 'fas fa-box']);
         Tela::create(['id' => '6', 'nome' => 'Fornecedores', 'url' => 'fornecedores', 'menu_destino' => '1', 'icone_classe' => 'fas fa-truck-loading']);
+        Tela::create(['id' => '7', 'nome' => 'Estoque', 'url' => 'estoque', 'menu_destino' => '1', 'icone_classe' => 'fas fa-boxes']);
     }
 }

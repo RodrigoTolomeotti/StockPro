@@ -18,7 +18,7 @@ class CreateEstoqueTable extends Migration
             $table->unsignedBigInteger('usuario_id');
             $table->unsignedBigInteger('produto_id');
 
-            $table->float('quantidade_disponivel', 8, 2);
+            $table->float('quantidade', 8, 2);
 
             $table->datetime('data_criacao');
             $table->datetime('data_atualizacao');

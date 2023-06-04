@@ -27,6 +27,7 @@ class AddNivelUsuarioIdUsuario extends Migration
     public function down()
     {
         Schema::table('usuario', function (Blueprint $table) {
+            $table->dropForeign('usuario_nivel_usuario_id_foreign');
             $table->dropColumn('nivel_usuario_id');
         });
     }

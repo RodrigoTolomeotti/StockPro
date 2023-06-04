@@ -17,15 +17,12 @@ class Produto extends Model
         'preco_unitario',
         'tipo_produto_id',
         'descricao',
-        'imagem'
+        'imagem',
+        'quantidade'
     ];
 
     public function usuario() {
         return $this->hasOne('App\Usuario');
-    }
-
-    public function estoque() {
-        return $this->hasMany('App\Estoque');
     }
 
 }

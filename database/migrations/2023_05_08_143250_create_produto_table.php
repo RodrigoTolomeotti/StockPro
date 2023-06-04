@@ -20,6 +20,7 @@ class CreateProdutoTable extends Migration
             $table->string('nome', 128);
             $table->integer('custo');
             $table->decimal('preco_unitario', 8, 2);
+            $table->float('quantidade', 8, 2)->nullable();
             $table->unsignedBigInteger('tipo_produto_id');
             $table->text('descricao');
             $table->string('imagem', 128)->nullable();

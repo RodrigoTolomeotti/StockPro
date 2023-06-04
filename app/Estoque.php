@@ -9,10 +9,11 @@ class Estoque extends Model
     const CREATED_AT = 'data_criacao';
     const UPDATED_AT = 'data_atualizacao';
 
-    public $table = 'tipo_produto';
+    public $table = 'estoque';
 
     protected $fillable = [
-        'quantidade_disponível',
+        'quantidade',
+        'produto_id'
     ];
 
     public function usuario() {

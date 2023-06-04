@@ -99,6 +99,14 @@ $router->group(['prefix' => 'fornecedor', 'middleware' => 'auth'], function () u
     $router->delete('/{id}', 'FornecedorController@delete');
 });
 
+$router->group(['prefix' => 'estoque', 'middleware' => 'auth'], function () use ($router) {
+
+    $router->get('/', 'EstoqueController@getAll');
+    $router->post('/', 'EstoqueController@create');
+    $router->put('/{id}', 'EstoqueController@update');
+    $router->delete('/{id}', 'EstoqueController@delete');
+});
+
 $router->group(['prefix' => 'notificacao', 'middleware' => 'auth'], function () use ($router) {
 
     $router->get('/', 'NotificacaoController@getAll');

@@ -38,3 +38,6 @@ $router->get('tipos-produtos', function() use ($router) {
 $router->get('fornecedores', function() use ($router) {
     return view('interfaces.fornecedores');
 });
+$router->get('estoque', function() use ($router) {
+    return view('interfaces.estoque');
+});
