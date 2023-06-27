@@ -33,6 +33,10 @@ class Usuario extends Model implements AuthenticatableContract, AuthorizableCont
         return $this->hasMany('App\Cliente');
     }
 
+    public function pedidos() {
+        return $this->hasMany('App\Pedido');
+    }
+
     public function erros() {
         return $this->hasMany('App\Erro');
     }

@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Estoque;
-use App\Produto;
+use App\Pedido;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 
-class EstoqueController extends Controller
+class PedidoController extends Controller
 {
 
     private $user = null;
@@ -24,12 +23,10 @@ class EstoqueController extends Controller
 
         try {
 
-            $query = $this->user->estoque()
-            ->select('estoque.id', 'nome', 'estoque.quantidade')
-            ->join('produto', 'estoque.produto_id', '=', 'produto.id');
+            $query = $this->user->pedidos();
 
-            if ($request->has('produto_id') && $request->input('produto_id') != '') {
-                $query->where('produto_id', 'like', '%' . $request->input('produto_id') . '%');
+            if ($request->has('nome') && $request->input('nome') != '') {
+                $query->where('nome', 'like', '%' . $request->input('nome') . '%');
             }
 
             $total_rows = $query->count();
@@ -49,7 +46,7 @@ class EstoqueController extends Controller
                 $order_by = $request->input('order_by', 'asc');
                 $query->orderBy($sort_by, $order_by);
             }
-            
+
             return response()->json([
                 'data' => $query->get(),
                 'totalRows' => $total_rows
@@ -66,10 +63,10 @@ class EstoqueController extends Controller
     }
     private function getValidation() {
         return [
-            'custo'             => ['required', 'numeric', 'min:0', 'regex:/^\d+(\.\d{1,2})?$/'],
-            'quantidade'        => ['required', 'numeric', 'min:0', 'regex:/^\d+(\.\d{1,2})?$/'],
-            'produto_id'        => ['required', 'exists:produto,id'],
-            'tipo_estoque'      => ['required', 'min:1', 'max:2']
+            'valor_total'      => ['nullable', 'numeric', 'min:1', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'cliente_id'       => ['required', 'exists:cliente,id'],
+            'data_liberacao'   => ['nullable', 'date'],
+            'data_entrega'     => ['required', 'date'],
         ];
     }
 
@@ -77,13 +74,8 @@ class EstoqueController extends Controller
         try {
             $this->validate($request, $this->getValidation());
 
-            $estoque = $this->user->estoque()->create($request->input());
-
-            $produto = Produto::find($request->input('produto_id'));
-            $produto->quantidade = $produto->quantidade + $request->input('quantidade');
-            $produto->save();
-
-            return ['data' => $estoque];
+            $pedido = $this->user->pedidos()->create($request->input());
+            return ['data' => $pedido];
 
         } catch (ValidationException | Exception $e) {
 
@@ -96,14 +88,14 @@ class EstoqueController extends Controller
         try {
             $this->validate($request, $this->getValidation());
 
-            $estoque = Estoque::find($id);
+            $pedidos = Pedido::find($id);
 
-            if (!$estoque) return [
-                'errors' => ['Estoque não encontrado']
+            if (!$pedidos) return [
+                'errors' => ['Pedido não encontrado']
             ];
-            $estoque->update($request->input());
+            $pedidos->update($request->input());
 
-            return ['data' => $estoque];
+            return ['data' => $pedidos];
 
         } catch (ValidationException | Exception $e) {
 
@@ -113,13 +105,10 @@ class EstoqueController extends Controller
 
     public function delete(Request $request, $id) {
 
-        $estoque = $this->user->estoque()->find($id);
+        $pedidos = $this->user->pedidos()->find($id);
 
-        try{            
-            $produto = Produto::find($estoque->produto_id);
-            $produto->quantidade = $produto->quantidade - $estoque->quantidade;
-            $estoque->delete();
-            $produto->save();
+        try{
+            $pedidos->delete();
         }catch(\Exception $e){
             return ['data' => false];
         }

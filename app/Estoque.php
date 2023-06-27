@@ -14,7 +14,9 @@ class Estoque extends Model
     protected $fillable = [
         'quantidade',
         'produto_id',
-        'fornecedor_id'
+        'fornecedor_id',
+        'custo',
+        'tipo_estoque'
     ];
 
     public function usuario() {
