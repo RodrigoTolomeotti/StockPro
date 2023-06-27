@@ -41,3 +41,6 @@ $router->get('fornecedores', function() use ($router) {
 $router->get('estoque', function() use ($router) {
     return view('interfaces.estoque');
 });
+$router->get('pedido', function() use ($router) {
+    return view('interfaces.pedido');
+});

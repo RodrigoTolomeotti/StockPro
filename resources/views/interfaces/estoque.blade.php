@@ -78,6 +78,15 @@
                             <option :value="null">Selecione um</option>
                         </template>
                     </b-form-select>
+                    <b-form-select
+                        v-else-if="field.attribute === 'tipo_estoque'"
+                        id="id"
+                        v-model="estoque['tipo_estoque']"
+                        :options="optionsTipoEstoque">
+                        <template v-slot:first>
+                            <option :value="null">Selecione um</option>
+                        </template>
+                    </b-form-select>
                     <b-form-input
                         v-else
                         id="field.attribute"
@@ -85,9 +94,6 @@
                         type="text"
                     ></b-form-input>
                 </b-form-group>
-                <!-- <b-form-group label-size="sm" label="Tipo de Produto" label-for="tipo_produto_id">
-                    
-                </b-form-group> -->
             </b-col>
         </b-row>
 
@@ -149,15 +155,21 @@
                 tipoProduto: {},
                 commonFields: [
                     {name: 'Produto', attribute: 'produto_id'},
+                    {name: 'Custo', attribute: 'custo'},
                     {name: 'Fornecedor', attribute: 'fornecedor_id'},
                     {name: 'Quantidade', attribute: 'quantidade'},
+                    {name: 'Tipo Estoque', attribute: 'tipo_estoque'},
                 ],
                 excluirModal: false,
                 idEstoqueExcluir: false,
                 temporaryFilters: {},
                 filters: {
                     nome: null
-                }
+                },
+                tipoEstoque: [
+                    {name: 'Entrada', value: 1},
+                    {name: 'Saída', value: 2},
+                ]
             }
         },
         methods: {
@@ -182,7 +194,11 @@
             },
             novoEstoque() {
                 this.estoque = {
-                    nome: null
+                    produto_id: null,
+                    custo: null,
+                    fornecedor_id: null,
+                    quantidade: null,
+                    tipo_estoque: null
                 }
                 this.modalEstoque = true
             },
@@ -287,6 +303,12 @@
                 return this.fornecedores.map(o => ({
                     value: o.id,
                     text: o.nome
+                }))
+            },
+            optionsTipoEstoque() {
+                return this.tipoEstoque.map(o => ({
+                    value: o.value,
+                    text: o.name
                 }))
             }
         },

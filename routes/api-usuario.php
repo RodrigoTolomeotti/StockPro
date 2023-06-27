@@ -107,6 +107,22 @@ $router->group(['prefix' => 'estoque', 'middleware' => 'auth'], function () use 
     $router->delete('/{id}', 'EstoqueController@delete');
 });
 
+$router->group(['prefix' => 'pedido', 'middleware' => 'auth'], function () use ($router) {
+
+    $router->get('/', 'PedidoController@getAll');
+    $router->post('/', 'PedidoController@create');
+    $router->put('/{id}', 'PedidoController@update');
+    $router->delete('/{id}', 'PedidoController@delete');
+});
+
+$router->group(['prefix' => 'item-pedido', 'middleware' => 'auth'], function () use ($router) {
+
+    $router->get('/', 'itemPedidoController@getAll');
+    $router->post('/', 'itemPedidoController@create');
+    $router->put('/{id}', 'itemPedidoController@update');
+    $router->delete('/{id}', 'itemPedidoController@delete');
+});
+
 $router->group(['prefix' => 'notificacao', 'middleware' => 'auth'], function () use ($router) {
 
     $router->get('/', 'NotificacaoController@getAll');

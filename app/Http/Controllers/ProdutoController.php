@@ -64,7 +64,6 @@ class ProdutoController extends Controller
     private function getValidation() {
         return [
             'nome'              => ['required', 'string', 'max:128'],
-            'custo'             => ['required', 'numeric', 'min:0', 'regex:/^\d+(\.\d{1,2})?$/'],
             'preco_unitario'    => ['nullable', 'numeric', 'min:1', 'regex:/^\d+(\.\d{1,2})?$/'],
             'tipo_produto_id'   => ['required', 'exists:tipo_produto,id'],
             'descricao'         => ['required', 'string'],

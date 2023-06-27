@@ -4,24 +4,27 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Produto extends Model
+class Pedido extends Model
 {
     const CREATED_AT = 'data_criacao';
     const UPDATED_AT = 'data_atualizacao';
 
-    public $table = 'produto';
+    public $table = 'pedido';
 
     protected $fillable = [
-        'nome',
-        'preco_unitario',
-        'tipo_produto_id',
-        'descricao',
-        'imagem',
-        'quantidade'
+        'usuario_id',
+        'cliente_id',
+        'valor_total',
+        'data_liberacao',
+        'data_entrega',
     ];
 
     public function usuario() {
         return $this->hasOne('App\Usuario');
+    }
+
+    public function itensPedido() {
+        return $this->hasMany('App\ItemPedido');
     }
 
 }
