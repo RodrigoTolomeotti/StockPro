@@ -51,7 +51,7 @@
         </div>
     </c-card>
     
-    <c-modal title="Pedidos" v-model="modalPedido" size="xl">
+    <c-modal title="Pedidos" v-model="modalPedido" size="lg">
         <template v-slot:buttons>
             <button @click="salvarPedido">Salvar</button>
         </template>
@@ -68,7 +68,7 @@
             <div v-if="tabs[0].active" class="p-3">
 
                 <b-row>
-                    <b-col cols="4">
+                    <b-col cols="12">
                         <b-form-group label-size="sm" v-for="field, i in commonFields" :key="i" :label="field.name" :label-for="field.attribute">
                             <b-form-select
                                 v-if="field.attribute === 'cliente_id'"
@@ -83,8 +83,7 @@
                                 v-else-if="field.type === 'date'"
                                 type="date"
                                 id="field.attribute"
-                                v-model="pedido[field.attribute]"
-                                v-validate="'nullable'">
+                                v-model="pedido[field.attribute]">
                             </b-form-input>
 
                             <b-form-select

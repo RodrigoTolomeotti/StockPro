@@ -20,7 +20,7 @@ class CreateItemPedidoTable extends Migration
             $table->unsignedBigInteger('produto_id');
 
             $table->decimal('preco_unitario', 8, 2);
-            $table->decimal('desconto', 8, 2);
+            $table->decimal('desconto', 8, 2)->nullable();
             $table->float('quantidade', 8, 2);
 
             $table->datetime('data_criacao');

@@ -15,6 +15,7 @@ class Produto extends Model
         'nome',
         'preco_unitario',
         'tipo_produto_id',
+        'fornecedor_id',
         'descricao',
         'imagem',
         'quantidade'

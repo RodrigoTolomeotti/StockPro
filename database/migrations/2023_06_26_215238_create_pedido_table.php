@@ -18,10 +18,10 @@ class CreatePedidoTable extends Migration
             $table->unsignedBigInteger('usuario_id');
             $table->unsignedBigInteger('cliente_id');
 
-            $table->decimal('valor_total', 8, 2);
+            $table->decimal('valor_total', 8, 2)->nullable();
 
-            $table->datetime('data_liberacao');
-            $table->datetime('data_entrega');
+            $table->datetime('data_liberacao')->nullable();
+            $table->datetime('data_entrega')->nullable();
             
             $table->datetime('data_criacao');
             $table->datetime('data_atualizacao');

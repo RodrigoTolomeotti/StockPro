@@ -65,15 +65,6 @@
                             <option :value="null">Selecione um</option>
                         </template>
                     </b-form-select>
-                    <b-form-select
-                        v-else-if="field.attribute === 'fornecedor_id'"
-                        id="fornecedor_id"
-                        v-model="produto['fornecedor_id']"
-                        :options="optionsFornecedores">
-                        <template v-slot:first>
-                            <option :value="null">Selecione um</option>
-                        </template>
-                    </b-form-select>
                     <b-form-input
                         v-else-if="field.attribute === 'preco_unitario'"
                         id="field.attribute"
@@ -167,10 +158,10 @@
                 produto: {},
                 commonFields: [
                     {name: 'Nome', attribute: 'nome'},
+                    {name: 'Custo', attribute: 'custo'},
                     {name: 'Preço Unitário', attribute: 'preco_unitario'},
                     {name: 'Quantidade Disponível', attribute: 'quantidade'},
                     {name: 'Tipo de Produto', attribute: 'tipo_produto_id'},
-                    {name: 'Fornecedor', attribute: 'fornecedor_id'},
                     {name: 'Descrição', attribute: 'descricao'}
                 ],
                 excluirModal: false,
@@ -181,7 +172,6 @@
                 },
                 imagem: null,
                 tipos_produtos: [],
-                fornecedores: []
             }
         },
         methods: {
@@ -207,6 +197,7 @@
             novoProduto() {
                 this.produto = {
                     nome: null,
+                    custo: null,
                     preco_unitario: null,
                     descricao: null,
                     imagem: null
@@ -322,11 +313,6 @@
                 axios.get('api/tipo-produto').then(res => {
                     this.tipos_produtos = res.data.data;
                 })
-            },
-            loadFornecedores() {
-                axios.get('api/fornecedor').then(res => {
-                    this.fornecedores = res.data.data;
-                })
             }
         },
         watch: {
@@ -348,18 +334,11 @@
                     value: o.id,
                     text: o.nome
                 }))
-            },
-            optionsFornecedores() {
-                return this.fornecedores.map(o => ({
-                    value: o.id,
-                    text: o.nome
-                }))
             }
         },
         created() {
             this.loadProduto(),
-            this.loadTiposProdutos(),
-            this.loadFornecedores()
+            this.loadTiposProdutos()
         },
         template: `@yield('interface')`
     })
