@@ -14,20 +14,35 @@
                 <span v-if="totalFilters" class="card-icons-alert">@{{totalFilters}}</span>
             </i>
         </template>
-
         <c-list :items="pedidos" :loading="loading" class="mb-3">
             <template v-slot:items="item">
                 <div class="d-flex justify-content-between w-100">
-                    <div class="d-flex flex-column">
-                        <div>
-                            <!-- <span style="font-size: .9em; color: #222; font-weight: bold;">@{{item.data.nome}}</span> -->
-                        </div>
-                        <div class="d-flex">
-                            <!-- <span class="text-elipsis" style="font-size: .8em; color: #6f6f6f">@{{item.data.quantidade}}</span> -->
-                        </div>
+                    <div class="d-flex flex-column align-items-start w-50">
+                    <div>
+                        <span style="font-size: .9em; color: #222;">Pedido <b>@{{item.data.id}}</b></span>
                     </div>
+                    <div>
+                        <span style="font-size: .9em; color: #222;">Cliente <b>@{{item.data.nome}}</b></span>
+                    </div>
+                    </div>
+                    <div class="d-flex flex-column align-items-start w-25">
+                    <div>
+                        <span style="font-size: 1em; color: #222;">Valor Total R$ <b>@{{item.data.valor_total}}</b></span>
+                    </div>
+                    </div>
+                    <div class="d-flex flex-column align-items-start">
+                    <div>
+                        <span v-if="item.data.data_criacao" style="font-size: .8em; color: #6f6f6f;">Dt. Criação: @{{item.data.data_criacao | datetimeCriacao}}</span>
+                    </div>
+                    <div>
+                        <span v-if="item.data.data_entrega" style="font-size: .8em; color: #6f6f6f;">Dt. Entrega: @{{item.data.data_entrega | datetime}}</span>
+                    </div>
+                    </div>
+                    <div class="d-flex align-items-center ml-2">
                     <div class="list-icons">
+                        <i @click="editarPedido(item.data)" class="fas fa-pen"></i>
                         <i @click="idPedidoExcluir = item.data.id; excluirModal = true" class="fas fa-trash-alt"></i>
+                    </div>
                     </div>
                 </div>
             </template>
@@ -52,9 +67,6 @@
     </c-card>
     
     <c-modal title="Pedidos" v-model="modalPedido" size="lg">
-        <template v-slot:buttons>
-            <button @click="salvarPedido">Salvar</button>
-        </template>
         <div class="tabs mb-2">
             <div v-for="tab in tabs"
                     class="tab"
@@ -64,9 +76,7 @@
             </div>
         </div>
         <transition name="tab-content">
-
             <div v-if="tabs[0].active" class="p-3">
-
                 <b-row>
                     <b-col cols="12">
                         <b-form-group label-size="sm" v-for="field, i in commonFields" :key="i" :label="field.name" :label-for="field.attribute">
@@ -104,13 +114,40 @@
                         </b-form-group>
                     </b-col>
                 </b-row>
-
+                <b-btn @click="salvarPedido" class="float-right" variant="primary">Salvar Cabeçalho</b-btn>
             </div>
+
             <div v-if="tabs[1].active" class="p-3">
 
-                teste
-
-            <!-- <b-btn @click="salvarUsuario" class="float-right" variant="primary">Salvar</b-btn> -->
+                <b-row>
+                    <b-col cols="12">
+                        <b-form-group label-size="sm" v-for="field, i in commonFieldsItems" :key="i" :label="field.name" :label-for="field.attribute">
+                            <b-form-select
+                                v-if="field.attribute === 'produto_id'"
+                                id="field.attribute"
+                                v-model="pedido[field.attribute]"
+                                :options="optionsProdutos">
+                                <template v-slot:first>
+                                    <option :value="null">Selecione um</option>
+                                </template>
+                            </b-form-select>
+                            <b-form-input
+                                v-else-if="field.attribute === 'preco_unitario'"
+                                    id="field.attribute"
+                                    v-model="precoUnitario"
+                                    type="text"
+                                    :readonly="true"
+                            ></b-form-input>
+                            <!-- <b-form-input
+                                v-else
+                                id="field.attribute"
+                                v-model="pedido[field.attribute]"
+                                type="text"
+                            ></b-form-input> -->
+                        </b-form-group>
+                    </b-col>
+                </b-row>
+                <b-btn @click="salvarPedido" class="float-right" variant="primary">Salvar Cabeçalho</b-btn>
 
             </div>
 
@@ -159,6 +196,7 @@
         data() {
             return {
                 activeTab: 1,
+                dontActiveTab: 1,
                 produtos: [],
                 produto: {},
                 pedidos: {},
@@ -178,6 +216,12 @@
                     // {name: 'Data Liberação', attribute: 'data_liberacao', type: 'date'},
                     {name: 'Data Entrega', attribute: 'data_entrega', type: 'date'},
                 ],
+                commonFieldsItems: [
+                    {name: 'Produto', attribute: 'produto_id', type: 'select'},
+                    {name: 'Preço Unitário', attribute: 'preco_unitario', type: 'text'},
+                    {name: 'Desconto', attribute: 'desconto', type: 'number'},
+                    {name: 'Quantidade', attribute: 'desconto', type: 'number'}
+                ],
                 excluirModal: false,
                 idPedidoExcluir: false,
                 temporaryFilters: {},
@@ -187,6 +231,10 @@
                 tipoPedido: [
                     {name: 'Entrada', value: 1},
                     {name: 'Saída', value: 2},
+                ],
+                mesesAbreviados: [
+                    "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+                    "Jul", "Ago", "Set", "Out", "Nov", "Dez"
                 ]
             }
         },
@@ -197,7 +245,7 @@
                     params: {
                         limit: this.limit,
                         offset: this.page * this.limit - this.limit,
-                        sort_by: 'pedido.data_atualizacao',
+                        sort_by: 'pedido.id',
                         ...this.filters
                     }
                 }).then(res => {
@@ -212,11 +260,9 @@
             },
             novoPedido() {
                 this.pedido = {
-                    usuario_id: null,
                     cliente_id: null,
-                    valor_total: null,
-                    data_liberacao: null,
                     data_entrega: null,
+                    valor_total: null
                 }
                 this.modalPedido = true
             },
@@ -224,9 +270,9 @@
                 this.pedido = JSON.parse(JSON.stringify(pedido))
                 this.modalPedido = true
             },
-            excluirTipoProduto() {
+            excluirPedido() {
 
-                axios.delete('api/pedido/' + this.idEstoqueExcluir).then(res => {
+                axios.delete('api/pedido/' + this.idPedidoExcluir).then(res => {
                     this.excluirModal = false
                     this.loadPedido()
 
@@ -252,7 +298,6 @@
                             })
                             return;
                         }
-                        this.modalPedido = false
                         this.loadPedido()
                         store.alerts.push({text: 'Pedido alterado com sucesso', variant:'success'})
                     })
@@ -269,10 +314,19 @@
                             })
                             return;
                         }
-                        this.modalPedido = false
                         this.loadPedido()
                         store.alerts.push({text: 'Pedidos incluído com sucesso', variant:'success'})
                     })
+                }
+            },
+            atualizarPrecoUnitario() {
+                console.log(1, produtoSelecionado.preco_unitario)
+                const produtoIdSelecionado = this.pedido.produto_id;
+                const produtoSelecionado = this.produtos.find(produto => produto.id === produtoIdSelecionado);
+                if (produtoSelecionado) {
+                    this.pedido.preco_unitario = produtoSelecionado.preco;
+                } else {
+                    this.pedido.preco_unitario = null;
                 }
             },
             abrirFiltros() {
@@ -329,14 +383,61 @@
                     text: o.name
                 }))
             },
-            isUsuarioChanged() {
-                return true
+            isPedidoChanged() {
+                if(this.pedido.cliente_id != null 
+                || this.pedido.valor_total != null
+                || this.pedido.data_entrega != null) return true
+            },
+            isItemPedidoChanged() {
+                if(this.pedido.produto_id != null 
+                || this.pedido.preco_unitario != null
+                || this.pedido.desconto != null
+                || this.pedido.quantidade != null
+                ) return true
             },
             tabs() {
                 return [
-                    {value: 1, text: 'Cabeçalho' + (this.isUsuarioChanged ? ' •' : ''), active: this.activeTab == 1},
-                    {value: 2, text: 'Item' + (this.isUsuarioChanged ? ' •' : ''), active: this.activeTab == 2},
+                    {value: 1, text: 'Cabeçalho' + (this.isPedidoChanged ? ' •' : ''), active: this.activeTab == 1},
+                    {value: 2, text: 'Item' + (this.isItemPedidoChanged ? ' •' : ''), active: this.activeTab == 2},
                 ]
+            },
+            precoUnitario() {
+                const produtoSelecionado = this.produtos.find(produto => produto.id === this.pedido.produto_id);
+                console.log(3, produtoSelecionado)
+                if (produtoSelecionado) {
+                    return produtoSelecionado.preco_unitario;
+                }
+                return null;
+            }
+        },
+        filters: {
+            datetime(date) {
+                if(date) {
+                    let arr = date.split(' ');
+                    let data = arr[0].split('-');
+                    let dia = data[2];
+                    let mesAbreviado = mesesAbreviados[parseInt(data[1]) - 1];
+                    let ano = data[0];
+                    
+                    return `${dia}-${mesAbreviado}-${ano}`;
+                }
+            },
+            datetimeCriacao(data) {
+                const partes = data.split("-"); // Divide a string da data em partes usando o separador "-"
+                const ano = partes[0];
+                const mes = partes[1];
+                const diaHora = partes[2].split("T"); // Divide a parte do dia e hora usando o separador "T"
+                const dia = diaHora[0];
+                
+                // Mapeia os meses em um array para obter o formato de três letras
+                this.mesesAbreviados = [
+                    "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+                    "Jul", "Ago", "Set", "Out", "Nov", "Dez"
+                ];
+                console.log(this.mesesAbreviados)
+                const mesAbreviado = this.mesesAbreviados[parseInt(mes) - 1];
+                
+                return `${dia}-${mesAbreviado}-${ano}`;
             }
         },
         created() {

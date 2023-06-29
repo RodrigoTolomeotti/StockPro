@@ -22,8 +22,16 @@ class PedidoController extends Controller
     {
 
         try {
-
-            $query = $this->user->pedidos();
+            $query = $this->user->pedidos()
+            ->select('pedido.id',
+                'pedido.usuario_id',
+                'cliente.nome',
+                'pedido.cliente_id',
+                'pedido.valor_total',
+                'pedido.data_entrega',
+                'pedido.data_criacao'
+            )
+            ->join('cliente', 'pedido.cliente_id', '=', 'cliente.id');
 
             if ($request->has('nome') && $request->input('nome') != '') {
                 $query->where('nome', 'like', '%' . $request->input('nome') . '%');
