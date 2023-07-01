@@ -9,7 +9,7 @@
 <div class="d-flex flex-column flex-grow-1">
     <c-card reference="StockPro > Pedido" title="Pedido">
         <template slot="icons">
-            <i @click="novoPedido" class="fas fa-plus fa-lg"></i>
+            <i @click="novoPedido(); dontActiveTab = 2" class="fas fa-plus fa-lg"></i>
             <i @click="abrirFiltros" class="fas fa-filter fa-lg">
                 <span v-if="totalFilters" class="card-icons-alert">@{{totalFilters}}</span>
             </i>
@@ -40,7 +40,7 @@
                     </div>
                     <div class="d-flex align-items-center ml-2">
                     <div class="list-icons">
-                        <i @click="editarPedido(item.data)" class="fas fa-pen"></i>
+                        <i @click="editarPedido(item.data); dontActiveTab = 0" class="fas fa-pen"></i>
                         <i @click="idPedidoExcluir = item.data.id; excluirModal = true" class="fas fa-trash-alt"></i>
                     </div>
                     </div>
@@ -66,13 +66,15 @@
         </div>
     </c-card>
     
-    <c-modal title="Pedidos" v-model="modalPedido" size="lg">
+    <c-modal title="Pedidos" v-model="modalPedido" size="xl" style="overflow: none !important">
         <div class="tabs mb-2">
-            <div v-for="tab in tabs"
-                    class="tab"
-                    @click="activeTab = tab.value"
-                    :class="{'active-tab': tab.active}">
-                @{{tab.text}}
+            <div 
+                v-for="tab in tabs"
+                class="tab"
+                @click="activeTab = tab.value"
+                :class="{'active-tab': tab.active}">
+                <span v-if="dontActiveTab !== tab.value">@{{tab.text}}</span>
+                
             </div>
         </div>
         <transition name="tab-content">
@@ -81,6 +83,7 @@
                     <b-col cols="12">
                         <b-form-group label-size="sm" v-for="field, i in commonFields" :key="i" :label="field.name" :label-for="field.attribute">
                             <b-form-select
+                                cols="2"
                                 v-if="field.attribute === 'cliente_id'"
                                 id="field.attribute"
                                 v-model="pedido[field.attribute]"
@@ -95,16 +98,13 @@
                                 id="field.attribute"
                                 v-model="pedido[field.attribute]">
                             </b-form-input>
-
-                            <b-form-select
-                                v-else-if="field.attribute === 'tipo_estoque'"
-                                id="id"
-                                v-model="pedido['tipo_estoque']"
-                                :options="optionsTipoEstoque">
-                                <template v-slot:first>
-                                    <option :value="null">Selecione um</option>
-                                </template>
-                            </b-form-select>
+                            <b-form-input 
+                                v-else-if="field.type === 'readonly'"
+                                type="text"
+                                id="field.attribute"
+                                v-model="pedido[field.attribute]"
+                                readonly>
+                            </b-form-input>
                             <b-form-input
                                 v-else
                                 id="field.attribute"
@@ -118,40 +118,101 @@
             </div>
 
             <div v-if="tabs[1].active" class="p-3">
+                <c-card title="Item Pedido">
+                    <template slot="icons">
+                        <i @click="novoItemPedido" class="fas fa-plus fa-lg"></i>
+                        <i @click="abrirFiltros" class="fas fa-filter fa-lg">
+                            <span v-if="totalFilters" class="card-icons-alert">@{{totalFilters}}</span>
+                        </i>
+                    </template>
+                    <c-list :items="itemsPedido" :loading="loading" class="mb-0">
+                        <template v-slot:items="item">
+                            <div class="d-flex justify-content-between w-100">
+                                <div class="d-flex flex-column align-items-start w-50">
+                                <div>
+                                    <span style="font-size: .9em; color: #222;">Item <b>@{{item.data.id}}</b></span>
+                                </div>
+                                <div>
+                                    <span style="font-size: .9em; color: #222;">Produto <b>@{{item.data.produto_id}}</b></span>
+                                </div>
+                                </div>
+                                <div class="d-flex flex-column align-items-start w-25">
+                                <div>
+                                    <span style="font-size: 1em; color: #222;">Preco Unitário R$ <b>@{{item.data.preco_unitario}}</b></span>
+                                </div>
+                                </div>
+                                <div class="d-flex flex-column align-items-start">
+                                <div>
+                                    <span v-if="item.data.data_criacao" style="font-size: .8em; color: #6f6f6f;">Dt. Criação: @{{item.data.data_criacao | datetimeCriacao}}</span>
+                                </div>
+                                <!-- <div>
+                                    <span v-if="item.data.data_entrega" style="font-size: .8em; color: #6f6f6f;">Dt. Entrega: @{{item.data.data_entrega | datetime}}</span>
+                                </div> -->
+                                </div>
+                                <div class="d-flex align-items-center ml-2">
+                                    <div class="list-icons">
+                                        <i @click="editarItemPedido(item.data)" class="fas fa-pen"></i>
+                                        <i @click="idItemPedidoExcluir = item.data.id; excluirItemPedidoModal = true" class="fas fa-trash-alt"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </c-list>
+                    <span class="card-divisor mb-3"></span>
 
-                <b-row>
-                    <b-col cols="12">
-                        <b-form-group label-size="sm" v-for="field, i in commonFieldsItems" :key="i" :label="field.name" :label-for="field.attribute">
-                            <b-form-select
-                                v-if="field.attribute === 'produto_id'"
-                                id="field.attribute"
-                                v-model="pedido[field.attribute]"
-                                :options="optionsProdutos">
-                                <template v-slot:first>
-                                    <option :value="null">Selecione um</option>
-                                </template>
-                            </b-form-select>
-                            <b-form-input
-                                v-else-if="field.attribute === 'preco_unitario'"
-                                    id="field.attribute"
-                                    v-model="precoUnitario"
-                                    type="text"
-                                    :readonly="true"
-                            ></b-form-input>
-                            <!-- <b-form-input
-                                v-else
-                                id="field.attribute"
-                                v-model="pedido[field.attribute]"
-                                type="text"
-                            ></b-form-input> -->
-                        </b-form-group>
-                    </b-col>
-                </b-row>
-                <b-btn @click="salvarPedido" class="float-right" variant="primary">Salvar Cabeçalho</b-btn>
+                    <div class="d-flex justify-content-between">
+                        <span style="font-size: .8em;font-weight: bold;">
+                            @{{(pageItemPedido - 1) * limitItemPedido + 1}} - @{{pageItemPedido * limitItemPedido > totalRowsItemPedido ? totalRowsItemPedido : pageItemPedido * limitItemPedido}} / @{{totalRowsItemPedido}}
+                        </span>
+                        <b-pagination
+                            v-model="pageItemPedido"
+                            :total-rows="totalRowsItemPedido"
+                            :per-page="limitItemPedido"
+                            aria-controls="my-table"
+                            pills
+                            size="sm"
+                            class="mb-0"
+                        ></b-pagination>
+                    </div>
+                </c-card>
+
 
             </div>
 
         </transition>
+    </c-modal>
+    <c-modal title="Item Pedido" v-model="modalItemPedido" size="lg">
+        <template v-slot:buttons>
+            <button @click="salvarItemPedido">Salvar</button>
+        </template>
+        <b-row>
+            <b-col cols="12">
+                <b-form-group label-size="sm" v-for="field, i in commonFieldsItems" :key="i" :label="field.name" :label-for="field.attribute">
+                    <b-form-select
+                        v-if="field.attribute === 'produto_id'"
+                        id="field.attribute"
+                        v-model="itemPedido[field.attribute]"
+                        :options="optionsProdutos">
+                        <template v-slot:first>
+                            <option :value="null">Selecione um</option>
+                        </template>
+                    </b-form-select>
+                    <b-form-input
+                        v-else-if="field.attribute === 'preco_unitario'"
+                            id="field.attribute"
+                            v-model="precoUnitario"
+                            type="text"
+                            :readonly="true"
+                    ></b-form-input>
+                    <b-form-input
+                        v-else
+                        id="field.attribute"
+                        v-model="itemPedido[field.attribute]"
+                        type="text"
+                    ></b-form-input>
+                </b-form-group>
+            </b-col>
+        </b-row>
     </c-modal>
 
     <c-modal title="Filtro" v-model="modalFiltro" size="md">
@@ -162,16 +223,37 @@
         </template>
 
         <b-row>
-            <b-col>
-
-                <b-form-group label-size="sm" label="Nome" label-for="filtro-nome">
+            <b-col cols="12">
+                <b-form-group label-size="sm" v-for="field, i in commonFields" :key="i" :label="field.name" :label-for="field.attribute">
+                    <b-form-select
+                        v-if="field.attribute === 'cliente_id'"
+                        id="field.attribute"
+                        v-model="temporaryFilters[field.attribute]"
+                        :options="optionsClientes">
+                        <template v-slot:first>
+                            <option :value="null">Selecione um</option>
+                        </template>
+                    </b-form-select>
+                    <b-form-input 
+                        v-else-if="field.type === 'date'"
+                        type="date"
+                        id="field.attribute"
+                        v-model="temporaryFilters[field.attribute]">
+                    </b-form-input>
+                    <b-form-input
+                        v-else
+                        id="field.attribute"
+                        v-model="temporaryFilters[field.attribute]"
+                        type="text"
+                    ></b-form-input>
+                </b-form-group>
+                <!-- <b-form-group label-size="sm" label="Nome" label-for="filtro-nome">
                     <b-form-input
                         id="filtro-nome"
                         v-model="temporaryFilters.nome"
                         type="text"
                     ></b-form-input>
-                </b-form-group>
-
+                </b-form-group> -->
             </b-col>
         </b-row>
 
@@ -187,6 +269,16 @@
         Deseja realmente excluir o pedido?
 
     </c-modal>
+    <c-modal v-model="excluirItemPedidoModal" title="Excluir Pedido" size="md">
+
+        <template v-slot:buttons>
+            <button @click="excluirItemPedidoModal = false" size="sm">Não</button>
+            <button @click="excluirItemPedido" size="sm" variant="primary">Sim</button>
+        </template>
+
+        Deseja realmente excluir o item do pedido?
+
+    </c-modal>
 </div>
 @endsection
 @push('scripts')
@@ -196,23 +288,30 @@
         data() {
             return {
                 activeTab: 1,
-                dontActiveTab: 1,
+                dontActiveTab: 2,
                 produtos: [],
                 produto: {},
                 pedidos: {},
                 pedido: [],
+                itemPedido: [],
+                itemsPedido: [],
                 clientes: [],
                 cliente: {},
                 limit: 15,
                 page: 1,
                 totalRows: 0,
+                limitItemPedido: 15,
+                pageItemPedido: 1,
+                totalRowsItemPedido: 0,
                 loading: false,
                 modalPedido: false,
+                modalItemPedido: false,
                 modalFiltro: false,
                 tipoProduto: {},
                 commonFields: [
+                    {name: 'Id', attribute: 'id', type: 'readonly'},
                     {name: 'Cliente', attribute: 'cliente_id', type: 'select'},
-                    {name: 'Valor Total', attribute: 'valor_total', type: 'text'},
+                    {name: 'Valor Total', attribute: 'valor_total', type: 'readonly'},
                     // {name: 'Data Liberação', attribute: 'data_liberacao', type: 'date'},
                     {name: 'Data Entrega', attribute: 'data_entrega', type: 'date'},
                 ],
@@ -220,7 +319,7 @@
                     {name: 'Produto', attribute: 'produto_id', type: 'select'},
                     {name: 'Preço Unitário', attribute: 'preco_unitario', type: 'text'},
                     {name: 'Desconto', attribute: 'desconto', type: 'number'},
-                    {name: 'Quantidade', attribute: 'desconto', type: 'number'}
+                    {name: 'Quantidade', attribute: 'quantidade', type: 'number'}
                 ],
                 excluirModal: false,
                 idPedidoExcluir: false,
@@ -235,12 +334,12 @@
                 mesesAbreviados: [
                     "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
                     "Jul", "Ago", "Set", "Out", "Nov", "Dez"
-                ]
+                ],
+                excluirItemPedidoModal: false
             }
         },
         methods: {
             loadPedido() {
-
                 axios.get('api/pedido', {
                     params: {
                         limit: this.limit,
@@ -260,15 +359,35 @@
             },
             novoPedido() {
                 this.pedido = {
+                    id: null,
                     cliente_id: null,
                     data_entrega: null,
                     valor_total: null
                 }
+                this.itemsPedido = {}
+                this.activeTab = 1;
                 this.modalPedido = true
+            },
+            abrirFiltros() {
+                this.temporaryFilters = JSON.parse(JSON.stringify(this.filters))
+                this.modalFiltro = true
+            },
+            filtrarPedido() {
+                this.page = 1
+                this.modalFiltro = false
+                this.filters = JSON.parse(JSON.stringify(this.temporaryFilters))
+                this.loadPedido()
+            },
+            limparFiltros() {
+                Object.keys(this.temporaryFilters).forEach(k => {
+                    this.temporaryFilters[k] = null
+                    this.loadPedido()
+                })
             },
             editarPedido(pedido) {
                 this.pedido = JSON.parse(JSON.stringify(pedido))
                 this.modalPedido = true
+                this.loadItemPedido();
             },
             excluirPedido() {
 
@@ -285,7 +404,6 @@
 
             },
             salvarPedido() {
-
                 if (this.pedido.id) {
                     axios.put('api/pedido/' + this.pedido.id, {
                         ...this.pedido
@@ -314,36 +432,97 @@
                             })
                             return;
                         }
+                        this.filters.id = res.data.data.id
                         this.loadPedido()
-                        store.alerts.push({text: 'Pedidos incluído com sucesso', variant:'success'})
+                        store.alerts.push({text: 'Pedido incluído com sucesso', variant:'success'})
                     })
                 }
+                this.modalPedido = false;
             },
-            atualizarPrecoUnitario() {
-                console.log(1, produtoSelecionado.preco_unitario)
-                const produtoIdSelecionado = this.pedido.produto_id;
-                const produtoSelecionado = this.produtos.find(produto => produto.id === produtoIdSelecionado);
-                if (produtoSelecionado) {
-                    this.pedido.preco_unitario = produtoSelecionado.preco;
-                } else {
-                    this.pedido.preco_unitario = null;
-                }
-            },
-            abrirFiltros() {
-                this.temporaryFilters = JSON.parse(JSON.stringify(this.filters))
-                this.modalFiltro = true
-            },
-            filtrarPedido() {
-                this.page = 1
-                this.modalFiltro = false
-                this.filters = JSON.parse(JSON.stringify(this.temporaryFilters))
-                this.loadPedido()
-            },
-            limparFiltros() {
-                Object.keys(this.temporaryFilters).forEach(k => {
-                    this.temporaryFilters[k] = null
-                    this.loadPedido()
+            loadItemPedido() {
+                console.log('oi')
+                axios.get('api/item-pedido', {
+                    params: {
+                        pedido_id: this.pedido.id,
+                        limit: this.limitItemPedido,
+                        offset: this.pageItemPedido * this.limitItemPedido - this.limitItemPedido,
+                        sort_by: 'item_pedido.id',
+                        ...this.filters
+                    }
+                }).then(res => {
+
+                    this.itemsPedido = res.data.data
+
+                    this.totalRowsItemPedido = res.data.totalRows
+
+                    this.loading = false
+
                 })
+            },
+            novoItemPedido() {
+                this.itemPedido = {
+                    pedido_id: this.pedido.id,
+                    produto_id: null,
+                    preco_unitario: null,
+                    desconto: null,
+                    quantidade: null
+                }
+                this.modalItemPedido = true
+            },
+            editarItemPedido(itemPedido) {
+                this.itemPedido = JSON.parse(JSON.stringify(itemPedido))
+                this.modalItemPedido = true
+            },
+            excluirItemPedido() {
+                axios.delete('api/item-pedido/' + this.idItemPedidoExcluir).then(res => {
+
+                    if (res.data.errors) {
+                        Object.keys(res.data.errors).forEach(k => {
+                            res.data.errors[k].forEach(e => {
+                                store.alerts.push({text: `${e}`, variant:'danger', delay: 3500})
+                            })
+                        })
+                        return;
+                    }
+                    this.excluirItemPedidoModal = false
+                    store.alerts.push({text: 'Item do pedido excluído com sucesso', variant:'success'})
+                    this.loadItemPedido()
+                })
+            },
+            salvarItemPedido() {
+                if (this.itemPedido.id) {
+                    axios.put('api/item-pedido/' + this.itemPedido.id, {
+                        ...this.itemPedido
+                    }).then(res => {
+                        if (res.data.errors) {
+                            Object.keys(res.data.errors).forEach(k => {
+                                res.data.errors[k].forEach(e => {
+                                    store.alerts.push({text: `${e}`, variant:'danger', delay: 3500})
+                                })
+                            })
+                            return;
+                        }
+                        this.modalItemPedido = false;
+                        this.loadItemPedido()
+                        store.alerts.push({text: 'Item do pedido alterado com sucesso', variant:'success'})
+                    })
+                } else {
+                    axios.post('api/item-pedido', {
+                        ...this.itemPedido
+                    }).then(res => {
+                        if (res.data.errors) {
+                            Object.keys(res.data.errors).forEach(k => {
+                                res.data.errors[k].forEach(e => {
+                                    store.alerts.push({text: `${e}`, variant:'danger', delay: 3500})
+                                })
+                            })
+                            return;
+                        }
+                        this.modalItemPedido = false;
+                        this.loadItemPedido()
+                        store.alerts.push({text: 'Itens do pedido incluídos com sucesso', variant:'success'})
+                    })
+                }
             },
             loadProdutos() {
                 axios.get('api/produto').then(res => {
@@ -359,6 +538,9 @@
         watch: {
             page() {
                 this.loadPedido()
+            },
+            pageItemPedido() {
+                this.loadItemPedido()
             }
         },
         computed: {
@@ -398,13 +580,13 @@
             tabs() {
                 return [
                     {value: 1, text: 'Cabeçalho' + (this.isPedidoChanged ? ' •' : ''), active: this.activeTab == 1},
-                    {value: 2, text: 'Item' + (this.isItemPedidoChanged ? ' •' : ''), active: this.activeTab == 2},
+                    {value: 2, text: 'Item' + (this.isItemPedidoChanged ? ' •' : ''), active: this.pedido_id === null ? this.activeTab == 1 : this.activeTab == 2},
                 ]
             },
             precoUnitario() {
-                const produtoSelecionado = this.produtos.find(produto => produto.id === this.pedido.produto_id);
-                console.log(3, produtoSelecionado)
+                const produtoSelecionado = this.produtos.find(produto => produto.id === this.itemPedido.produto_id);
                 if (produtoSelecionado) {
+                    this.itemPedido.preco_unitario = produtoSelecionado.preco_unitario;
                     return produtoSelecionado.preco_unitario;
                 }
                 return null;
@@ -434,7 +616,6 @@
                     "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
                     "Jul", "Ago", "Set", "Out", "Nov", "Dez"
                 ];
-                console.log(this.mesesAbreviados)
                 const mesAbreviado = this.mesesAbreviados[parseInt(mes) - 1];
                 
                 return `${dia}-${mesAbreviado}-${ano}`;

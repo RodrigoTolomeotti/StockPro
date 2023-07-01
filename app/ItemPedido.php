@@ -20,9 +20,9 @@ class ItemPedido extends Model
         'quantidade',
     ];
 
-    // public function usuario() {
-    //     return $this->belongsTo('App\Usuario');
-    // }
+    public function usuario() {
+        return $this->belongsTo('App\Usuario');
+    }
 
     public function pedido() {
         return $this->hasOne('App\Pedido');

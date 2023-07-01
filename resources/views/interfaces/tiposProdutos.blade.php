@@ -75,7 +75,7 @@
 
         <template v-slot:buttons>
             <button @click="limparFiltros">Limpar</button>
-            <button @click="filtrarContatos">Filtrar</button>
+            <button @click="filtrarTipoProduto">Filtrar</button>
         </template>
 
         <b-row>
@@ -101,7 +101,7 @@
             <button @click="excluirTipoProduto" size="sm" variant="primary">Sim</button>
         </template>
 
-        Deseja realmente excluir o contato?
+        Deseja realmente excluir o tipo de produto?
 
     </c-modal>
 </div>
@@ -164,14 +164,18 @@
             excluirTipoProduto() {
 
                 axios.delete('api/tipo-produto/' + this.idTipoProdutoExcluir).then(res => {
-                    this.excluirModal = false
-                    this.loadtipoProduto()
 
-                    if(res.data.data){
-                        store.alerts.push({text: 'Tipo de Produto excluído com sucesso', variant:'success'})
-                    }else{
-                        store.alerts.push({text: 'Erro ao excluir Tipo de Produto', variant:'danger'})
+                    if (res.data.errors) {
+                        Object.keys(res.data.errors).forEach(k => {
+                            res.data.errors[k].forEach(e => {
+                                store.alerts.push({text: `${e}`, variant:'danger', delay: 3500})
+                            })
+                        })
+                        return;
                     }
+                    this.excluirModal = false
+                    store.alerts.push({text: 'Tipo de Produto excluído com sucesso', variant:'success'})
+                    this.loadtipoProduto()
                 })
 
             },
@@ -216,7 +220,7 @@
                 this.temporaryFilters = JSON.parse(JSON.stringify(this.filters))
                 this.modalFiltro = true
             },
-            filtrarContatos() {
+            filtrarTipoProduto() {
                 this.page = 1
                 this.modalFiltro = false
                 this.filters = JSON.parse(JSON.stringify(this.temporaryFilters))

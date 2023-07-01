@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\TipoProduto;
+use App\Produto;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
@@ -91,7 +92,7 @@ class TipoProdutoController extends Controller
 
             $exists = TipoProduto::findByTipoProdutoNome(Auth::user()->id, $request->input('nome'));
             if ($exists) {
-                throw ValidationException::withMessages(['exists' => 'Já existe um Tipo de Produto com este nome 😢']);
+                throw ValidationException::withMessages(['exists' => 'Tipo de Produto já cadastrado 😢']);
             }
             $tipoProduto = TipoProduto::find($id);
 
@@ -109,13 +110,20 @@ class TipoProdutoController extends Controller
     }
 
     public function delete(Request $request, $id) {
-
-        $tipoProduto = $this->user->tiposProdutos()->find($id);
-
         try{
+
+            $existsProduto = Produto::where('tipo_produto_id', $id)->count() > 0 ? true : false;
+
+            if ($existsProduto) {
+                throw ValidationException::withMessages(['exists' => 'Tipo de Produto já utilizado em um produto 😢']);
+            }
+
+            $tipoProduto = $this->user->tiposProdutos()->find($id);
             $tipoProduto->delete();
-        }catch(\Exception $e){
-            return ['data' => false];
+
+        } catch (ValidationException | Exception $e) {
+            return ['errors' => $e->errors()];
+
         }
 
         return ['data' => true];

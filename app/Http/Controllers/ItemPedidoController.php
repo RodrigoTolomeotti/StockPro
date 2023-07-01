@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\itemPedido;
 use App\Pedido;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -9,7 +10,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 
-class PedidoController extends Controller
+class itemPedidoController extends Controller
 {
 
     private $user = null;
@@ -18,59 +19,57 @@ class PedidoController extends Controller
         $this->user = Auth::user();
     }
 
+    public function getAllIItems(Request $request) 
+    {
+        try {
+            $pedido = Pedido::find($request->input('pedido_id'));
+            dd($pedido->itensPedido()->limit(1));
+
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'errors' => [$e->getMessage()]
+            ]);
+
+        }
+    }
+
     public function getAll(Request $request)
     {
 
         try {
-            $query = $this->user->pedidos()
-            ->select('pedido.id',
-                'pedido.usuario_id',
-                'cliente.nome',
-                'pedido.cliente_id',
-                'pedido.valor_total',
-                'pedido.data_entrega',
-                'pedido.data_criacao'
-            )
-            ->join('cliente', 'pedido.cliente_id', '=', 'cliente.id');
 
-            if ($request->has('id') && $request->input('id') != '') {
-                $query->where('pedido.id', '=', $request->input('id'));
+            $itemsPedido = Pedido::find($request->input('pedido_id'))->itensPedido();
+
+            if ($request->has('nome') && $request->input('nome') != '') {
+                $itemsPedido->where('nome', 'like', '%' . $request->input('nome') . '%');
             }
-
-            if ($request->has('cliente_id') && $request->input('cliente_id') != '') {
-                $query->where('pedido.cliente_id', '=', $request->input('cliente_id'));
-            }
-
-            if ($request->has('valor_total') && $request->input('valor_total') != '') {
-                $query->where('pedido.valor_total', 'like', '%' . $request->input('valor_total') . '%');
-            }            
             
-            if ($request->has('data_entrega') && $request->input('data_entrega') != '') {
-                $query->where('pedido.data_entrega', '=', $request->input('nome'));
-            }
-
-            $total_rows = $query->count();
-
             if ($request->has('offset')) {
                 $offset = $request->input('offset');
-                $query->offset($offset);
+                $itemsPedido->offset($offset);
             }
-
+            
             if ($request->has('limit')) {
                 $limit = $request->input('limit');
-                $query->limit($limit);
+                $itemsPedido->limit($limit);
             }
-
+            
             if ($request->has('sort_by')) {
                 $sort_by = $request->input('sort_by');
                 $order_by = $request->input('order_by', 'asc');
-                $query->orderBy($sort_by, $order_by);
+                $itemsPedido->orderBy($sort_by, $order_by);
             }
-
+            
+            $total_rows = $itemsPedido->count();
+            
+            $itemsPedido = $itemsPedido->get();
+            
             return response()->json([
-                'data' => $query->get(),
+                'data' => $itemsPedido,
                 'totalRows' => $total_rows
             ]);
+            
 
         } catch (\Exception $e) {
 
@@ -83,18 +82,30 @@ class PedidoController extends Controller
     }
     private function getValidation() {
         return [
-            'valor_total'      => ['nullable', 'numeric', 'min:0', 'regex:/^\d+(\.\d{1,2})?$/'],
-            'cliente_id'       => ['required', 'exists:cliente,id'],
-            'data_liberacao'   => ['nullable', 'date'],
-            'data_entrega'     => ['required', 'date'],
+            // 'pedido_id'        => ['required', 'exists:pedido,id'],
+            'produto_id'       => ['required', 'exists:produto,id'],
+            'preco_unitario'   => ['required', 'numeric', 'min:1', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'desconto'         => ['nullable', 'numeric', 'min:1', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'quantidade'       => ['nullable', 'numeric', 'min:0', 'regex:/^\d+(\.\d{1,2})?$/'],
         ];
     }
 
     public function create(Request $request) {
         try {
+            $object = $request->input();
+            if(!$object['desconto']) {
+                $object['desconto'] = 0;
+            }
+            if(!$object['quantidade']) {
+                $object['quantidade'] = 0;
+            }
+            // dd($object);
             $this->validate($request, $this->getValidation());
 
-            $pedido = $this->user->pedidos()->create($request->input());
+            if(!$request->input('pedido_id'))
+                throw ValidationException::withMessages(['save' => 'Salve o cabeçalho do pedido!']);
+
+            $pedido = $this->user->itensPedido()->create($object);
             return ['data' => $pedido];
 
         } catch (ValidationException | Exception $e) {
@@ -108,7 +119,7 @@ class PedidoController extends Controller
         try {
             $this->validate($request, $this->getValidation());
 
-            $pedidos = Pedido::find($id);
+            $pedidos = itemPedido::find($id);
 
             if (!$pedidos) return [
                 'errors' => ['Pedido não encontrado']
@@ -125,7 +136,7 @@ class PedidoController extends Controller
 
     public function delete(Request $request, $id) {
 
-        $pedidos = $this->user->pedidos()->find($id);
+        $pedidos = $this->user->itensPedido()->find($id);
 
         try{
             $pedidos->delete();
