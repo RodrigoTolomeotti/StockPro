@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\itemPedido;
 use App\Pedido;
+use App\Produto;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
@@ -19,21 +20,6 @@ class itemPedidoController extends Controller
         $this->user = Auth::user();
     }
 
-    public function getAllIItems(Request $request) 
-    {
-        try {
-            $pedido = Pedido::find($request->input('pedido_id'));
-            dd($pedido->itensPedido()->limit(1));
-
-        } catch (\Exception $e) {
-
-            return response()->json([
-                'errors' => [$e->getMessage()]
-            ]);
-
-        }
-    }
-
     public function getAll(Request $request)
     {
 
@@ -41,9 +27,19 @@ class itemPedidoController extends Controller
 
             $itemsPedido = Pedido::find($request->input('pedido_id'))->itensPedido();
 
-            if ($request->has('nome') && $request->input('nome') != '') {
-                $itemsPedido->where('nome', 'like', '%' . $request->input('nome') . '%');
+            if ($request->has('produto_id') && $request->input('produto_id') != '') {
+                $itemsPedido->where('produto_id', '=',$request->input('produto_id'));
             }
+
+            if ($request->has('preco_unitario') && $request->input('preco_unitario') != '') {
+                $itemsPedido->where('preco_unitario', '=',$request->input('preco_unitario'));
+            }
+
+            if ($request->has('quantidade') && $request->input('quantidade') != '') {
+                $itemsPedido->where('quantidade', '=',$request->input('quantidade'));
+            }
+
+            $total_rows = $itemsPedido->count();
             
             if ($request->has('offset')) {
                 $offset = $request->input('offset');
@@ -60,8 +56,6 @@ class itemPedidoController extends Controller
                 $order_by = $request->input('order_by', 'asc');
                 $itemsPedido->orderBy($sort_by, $order_by);
             }
-            
-            $total_rows = $itemsPedido->count();
             
             $itemsPedido = $itemsPedido->get();
             
@@ -86,27 +80,40 @@ class itemPedidoController extends Controller
             'produto_id'       => ['required', 'exists:produto,id'],
             'preco_unitario'   => ['required', 'numeric', 'min:1', 'regex:/^\d+(\.\d{1,2})?$/'],
             'desconto'         => ['nullable', 'numeric', 'min:1', 'regex:/^\d+(\.\d{1,2})?$/'],
-            'quantidade'       => ['nullable', 'numeric', 'min:0', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'quantidade'       => ['nullable', 'numeric', 'min:1', 'regex:/^\d+(\.\d{1,2})?$/'],
         ];
     }
 
     public function create(Request $request) {
         try {
-            $object = $request->input();
-            if(!$object['desconto']) {
-                $object['desconto'] = 0;
-            }
-            if(!$object['quantidade']) {
-                $object['quantidade'] = 0;
-            }
-            // dd($object);
-            $this->validate($request, $this->getValidation());
 
+            $object = $request->input();
+            $produto = Produto::find($request->input('produto_id'));
+
+            if(!$object['quantidade']) {
+                throw ValidationException::withMessages(['incorrect' => 'Quantidade obrigatória 😢']);
+            }
+            
+            $this->validate($request, $this->getValidation());
+            
             if(!$request->input('pedido_id'))
                 throw ValidationException::withMessages(['save' => 'Salve o cabeçalho do pedido!']);
 
-            $pedido = $this->user->itensPedido()->create($object);
-            return ['data' => $pedido];
+            if(!$this->checkStockProduct($produto, $object['quantidade']))
+                throw ValidationException::withMessages(['incorrect' => 'Produto sem estoque 😢']);
+
+            $itemPedido = $this->user->itensPedido()->create($object);
+
+            $itemPedido->update($object);
+
+            $valorTotal = $this->calculeValuePedido($itemPedido->pedido_id);
+
+            if(!$valorTotal)
+                throw ValidationException::withMessages(['incorrect' => 'Erro ao calcular o pedido! 😢']);
+            
+            $itemPedido->valor_total = $valorTotal;
+
+            return ['data' => $itemPedido];
 
         } catch (ValidationException | Exception $e) {
 
@@ -117,16 +124,37 @@ class itemPedidoController extends Controller
 
     public function update($id, Request $request) {
         try {
+            $object = $request->input();
+            $produto = Produto::find($request->input('produto_id'));
+            
+            if(!$object['quantidade']) {
+                throw ValidationException::withMessages(['incorrect' => 'Quantidade obrigatória 😢']);
+            }
+            
             $this->validate($request, $this->getValidation());
+            
+            if(!$request->input('pedido_id'))
+                throw ValidationException::withMessages(['save' => 'Salve o cabeçalho do pedido!']);
 
-            $pedidos = itemPedido::find($id);
+            if(!$this->checkStockProduct($produto, $object['quantidade']))
+                throw ValidationException::withMessages(['incorrect' => 'Produto sem estoque 😢']);
 
-            if (!$pedidos) return [
+            $itemPedido = itemPedido::find($id);
+
+            if (!$itemPedido) return [
                 'errors' => ['Pedido não encontrado']
             ];
-            $pedidos->update($request->input());
 
-            return ['data' => $pedidos];
+            $itemPedido->update($object);
+
+            $valorTotal = $this->calculeValuePedido($itemPedido->pedido_id);
+
+            if(!$valorTotal)
+                throw ValidationException::withMessages(['incorrect' => 'Erro ao calcular o pedido! 😢']);
+            
+            $itemPedido->valor_total = $valorTotal;
+
+            return ['data' => $itemPedido];
 
         } catch (ValidationException | Exception $e) {
 
@@ -136,14 +164,56 @@ class itemPedidoController extends Controller
 
     public function delete(Request $request, $id) {
 
-        $pedidos = $this->user->itensPedido()->find($id);
+        $itemPedido = $this->user->itensPedido()->find($id);
+        $pedidoId = $itemPedido->pedido_id;
 
         try{
-            $pedidos->delete();
-        }catch(\Exception $e){
-            return ['data' => false];
+
+            $itemPedido->delete();
+            $valorTotal = $this->calculeValuePedido($pedidoId);
+            if($valorTotal === false)
+                throw ValidationException::withMessages(['incorrect' => 'Erro ao calcular o pedido! 😢']);
+
+        } catch (ValidationException | Exception $e) {
+
+            return ['errors' => $e->errors()];
         }
 
-        return ['data' => true];
+        return ['data' => ['valor_total' => $valorTotal]];
+    }
+
+    public function checkStockProduct($produto, $quantidadePedida) {
+        
+        $quantidadeAtual = $produto->quantidade;
+
+        $produto->quantidade = $produto->quantidade - $quantidadePedida;
+        if($produto->quantidade <= 0)
+            return false;
+        
+        $produto->save();
+        return true;
+
+
+    }
+
+    public function calculeValuePedido($id) {
+        $pedido = Pedido::find($id);
+        $itensPedido = $pedido->itensPedido;
+        
+        $valorTotal = 0;
+        
+        foreach ($itensPedido as $itemPedido) {
+            $precoUnitario = $itemPedido->preco_unitario;
+            $quantidade = $itemPedido->quantidade;
+            $valorItem = $precoUnitario * $quantidade;
+            
+            $valorTotal += $valorItem;
+        }
+        
+        $pedido->valor_total = $valorTotal;
+        $pedido->save();
+
+        return $valorTotal;
+
     }
 }

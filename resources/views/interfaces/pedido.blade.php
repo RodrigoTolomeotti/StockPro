@@ -121,8 +121,8 @@
                 <c-card title="Item Pedido">
                     <template slot="icons">
                         <i @click="novoItemPedido" class="fas fa-plus fa-lg"></i>
-                        <i @click="abrirFiltros" class="fas fa-filter fa-lg">
-                            <span v-if="totalFilters" class="card-icons-alert">@{{totalFilters}}</span>
+                        <i @click="abrirFiltrosItemPedido" class="fas fa-filter fa-lg">
+                            <span v-if="totalFiltersItemPedido" class="card-icons-alert">@{{totalFiltersItemPedido}}</span>
                         </i>
                     </template>
                     <c-list :items="itemsPedido" :loading="loading" class="mb-0">
@@ -151,7 +151,7 @@
                                 </div>
                                 <div class="d-flex align-items-center ml-2">
                                     <div class="list-icons">
-                                        <i @click="editarItemPedido(item.data)" class="fas fa-pen"></i>
+                                        <i @click="editarItemPedido(item.data); editItemPedido = true" class="fas fa-pen"></i>
                                         <i @click="idItemPedidoExcluir = item.data.id; excluirItemPedidoModal = true" class="fas fa-trash-alt"></i>
                                     </div>
                                 </div>
@@ -192,17 +192,19 @@
                         v-if="field.attribute === 'produto_id'"
                         id="field.attribute"
                         v-model="itemPedido[field.attribute]"
-                        :options="optionsProdutos">
+                        @change="precoManual = false"
+                        :options="optionsProdutos"
+                        :disabled="editItemPedido">
                         <template v-slot:first>
                             <option :value="null">Selecione um</option>
                         </template>
                     </b-form-select>
                     <b-form-input
                         v-else-if="field.attribute === 'preco_unitario'"
-                            id="field.attribute"
-                            v-model="precoUnitario"
-                            type="text"
-                            :readonly="true"
+                        id="field.attribute"
+                        v-model="itemPedido.preco_unitario"
+                        type="text"
+                        @change="precoManual = true"
                     ></b-form-input>
                     <b-form-input
                         v-else
@@ -259,6 +261,44 @@
 
     </c-modal>
 
+    <c-modal title="Filtro" v-model="modalFiltroItemPedido" size="md">
+
+        <template v-slot:buttons>
+            <button @click="limparFiltrosItemPedido">Limpar</button>
+            <button @click="filtrarItemPedido">Filtrar</button>
+        </template>
+
+        <b-row>
+            <b-col cols="12">
+                <b-form-group label-size="sm" v-for="field, i in commonFieldsItems" :key="i" :label="field.name" :label-for="field.attribute">
+                    <b-form-select
+                        v-if="field.attribute === 'produto_id'"
+                        id="field.attribute"
+                        v-model="temporaryFiltersItemPedido[field.attribute]"
+                        :options="optionsProdutos">
+                        <template v-slot:first>
+                            <option :value="null">Selecione um</option>
+                        </template>
+                    </b-form-select>
+                    <b-form-input
+                        v-else-if="field.attribute === 'preco_unitario'"
+                        id="field.attribute"
+                        v-model="temporaryFiltersItemPedido[field.attribute]"
+                        type="text"
+                        @change="precoManual = true"
+                    ></b-form-input>
+                    <b-form-input
+                        v-else
+                        id="field.attribute"
+                        v-model="temporaryFiltersItemPedido[field.attribute]"
+                        type="text"
+                    ></b-form-input>
+                </b-form-group>
+            </b-col>
+        </b-row>
+
+    </c-modal>
+
     <c-modal v-model="excluirModal" title="Excluir Pedido" size="md">
 
         <template v-slot:buttons>
@@ -307,6 +347,7 @@
                 modalPedido: false,
                 modalItemPedido: false,
                 modalFiltro: false,
+                modalFiltroItemPedido: false,
                 tipoProduto: {},
                 commonFields: [
                     {name: 'Id', attribute: 'id', type: 'readonly'},
@@ -318,14 +359,21 @@
                 commonFieldsItems: [
                     {name: 'Produto', attribute: 'produto_id', type: 'select'},
                     {name: 'Preço Unitário', attribute: 'preco_unitario', type: 'text'},
-                    {name: 'Desconto', attribute: 'desconto', type: 'number'},
+                    // {name: 'Desconto', attribute: 'desconto', type: 'number'},
                     {name: 'Quantidade', attribute: 'quantidade', type: 'number'}
                 ],
                 excluirModal: false,
                 idPedidoExcluir: false,
+                idItemPedidoExcluir: false,
                 temporaryFilters: {},
+                temporaryFiltersItemPedido: {},
                 filters: {
                     nome: null
+                },
+                filtersItemPedido: {
+                    produto_id: null,
+                    preco_unitario: null,
+                    quantidade: null
                 },
                 tipoPedido: [
                     {name: 'Entrada', value: 1},
@@ -335,7 +383,9 @@
                     "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
                     "Jul", "Ago", "Set", "Out", "Nov", "Dez"
                 ],
-                excluirItemPedidoModal: false
+                excluirItemPedidoModal: false,
+                precoManual: false,
+                editItemPedido: false
             }
         },
         methods: {
@@ -385,6 +435,8 @@
                 })
             },
             editarPedido(pedido) {
+                this.temporaryFiltersItemPedido, this.filtersItemPedido = {}
+                this.activeTab = 1;
                 this.pedido = JSON.parse(JSON.stringify(pedido))
                 this.modalPedido = true
                 this.loadItemPedido();
@@ -440,14 +492,13 @@
                 this.modalPedido = false;
             },
             loadItemPedido() {
-                console.log('oi')
                 axios.get('api/item-pedido', {
                     params: {
                         pedido_id: this.pedido.id,
                         limit: this.limitItemPedido,
                         offset: this.pageItemPedido * this.limitItemPedido - this.limitItemPedido,
                         sort_by: 'item_pedido.id',
-                        ...this.filters
+                        ...this.filtersItemPedido
                     }
                 }).then(res => {
 
@@ -467,7 +518,8 @@
                     desconto: null,
                     quantidade: null
                 }
-                this.modalItemPedido = true
+                this.editItemPedido = false;
+                this.modalItemPedido = true;
             },
             editarItemPedido(itemPedido) {
                 this.itemPedido = JSON.parse(JSON.stringify(itemPedido))
@@ -486,6 +538,7 @@
                     }
                     this.excluirItemPedidoModal = false
                     store.alerts.push({text: 'Item do pedido excluído com sucesso', variant:'success'})
+                    this.pedido.valor_total = res.data.data.valor_total;
                     this.loadItemPedido()
                 })
             },
@@ -504,6 +557,7 @@
                         }
                         this.modalItemPedido = false;
                         this.loadItemPedido()
+                        this.pedido.valor_total = res.data.data.valor_total;
                         store.alerts.push({text: 'Item do pedido alterado com sucesso', variant:'success'})
                     })
                 } else {
@@ -520,9 +574,26 @@
                         }
                         this.modalItemPedido = false;
                         this.loadItemPedido()
+                        this.pedido.valor_total = res.data.data.valor_total;
                         store.alerts.push({text: 'Itens do pedido incluídos com sucesso', variant:'success'})
                     })
                 }
+            },
+            abrirFiltrosItemPedido() {
+                this.temporaryFiltersItemPedido = JSON.parse(JSON.stringify(this.filtersItemPedido))
+                this.modalFiltroItemPedido = true
+            },
+            filtrarItemPedido() {
+                this.page = 1
+                this.modalFiltroItemPedido = false
+                this.filtersItemPedido = JSON.parse(JSON.stringify(this.temporaryFiltersItemPedido))
+                this.loadItemPedido()
+            },
+            limparFiltrosItemPedido() {
+                Object.keys(this.temporaryFiltersItemPedido).forEach(k => {
+                    this.temporaryFiltersItemPedido[k] = null
+                    this.loadItemPedido()
+                })
             },
             loadProdutos() {
                 axios.get('api/produto').then(res => {
@@ -546,6 +617,9 @@
         computed: {
             totalFilters() {
                 return Object.keys(this.filters).filter(k => this.filters[k] && this.filters[k] != '').length
+            },
+            totalFiltersItemPedido() {
+                return Object.keys(this.filtersItemPedido).filter(k => this.filtersItemPedido[k] && this.filtersItemPedido[k] != '').length
             },
             optionsProdutos() {
                 return this.produtos.map(o => ({
@@ -585,12 +659,19 @@
             },
             precoUnitario() {
                 const produtoSelecionado = this.produtos.find(produto => produto.id === this.itemPedido.produto_id);
-                if (produtoSelecionado) {
+                if (!this.precoManual && produtoSelecionado) {
                     this.itemPedido.preco_unitario = produtoSelecionado.preco_unitario;
                     return produtoSelecionado.preco_unitario;
                 }
                 return null;
             }
+        //     precoUnitario() {
+        //     const produtoSelecionado = this.produtos.find(produto => produto.id === this.itemPedido.produto_id);
+        //     if (produtoSelecionado && this.itemPedido.preco_unitario === null) {
+        //         return produtoSelecionado.preco_unitario;
+        //     }
+        //     return this.itemPedido.preco_unitario || null;
+        // }
         },
         filters: {
             datetime(date) {
