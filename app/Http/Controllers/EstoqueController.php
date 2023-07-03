@@ -78,9 +78,17 @@ class EstoqueController extends Controller
             $this->validate($request, $this->getValidation());
 
             $estoque = $this->user->estoque()->create($request->input());
-
+            
             $produto = Produto::find($request->input('produto_id'));
-            $produto->quantidade = $produto->quantidade + $request->input('quantidade');
+            if($estoque->tipo_estoque == 1) {
+                $produto->quantidade = $produto->quantidade + $request->input('quantidade');
+            } else {
+                $produto->quantidade = $produto->quantidade - $request->input('quantidade');
+
+                if($produto->quantidade === 0)
+                    throw ValidationException::withMessages(['incorrect' => 'Não é possível lançar estoque de saída quando não há estoque 😢']);
+
+            }
             $produto->save();
 
             return ['data' => $estoque];

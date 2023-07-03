@@ -22,11 +22,31 @@ class PedidoController extends Controller
     {
 
         try {
+            $query = $this->user->pedidos()
+            ->select('pedido.id',
+                'pedido.usuario_id',
+                'cliente.nome',
+                'pedido.cliente_id',
+                'pedido.valor_total',
+                'pedido.data_entrega',
+                'pedido.data_criacao'
+            )
+            ->join('cliente', 'pedido.cliente_id', '=', 'cliente.id');
 
-            $query = $this->user->pedidos();
+            if ($request->has('id') && $request->input('id') != '') {
+                $query->where('pedido.id', '=', $request->input('id'));
+            }
 
-            if ($request->has('nome') && $request->input('nome') != '') {
-                $query->where('nome', 'like', '%' . $request->input('nome') . '%');
+            if ($request->has('cliente_id') && $request->input('cliente_id') != '') {
+                $query->where('pedido.cliente_id', '=', $request->input('cliente_id'));
+            }
+
+            if ($request->has('valor_total') && $request->input('valor_total') != '') {
+                $query->where('pedido.valor_total', 'like', '%' . $request->input('valor_total') . '%');
+            }            
+            
+            if ($request->has('data_entrega') && $request->input('data_entrega') != '') {
+                $query->where('pedido.data_entrega', '=', $request->input('nome'));
             }
 
             $total_rows = $query->count();
@@ -63,7 +83,7 @@ class PedidoController extends Controller
     }
     private function getValidation() {
         return [
-            'valor_total'      => ['nullable', 'numeric', 'min:1', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'valor_total'      => ['nullable', 'numeric', 'min:0', 'regex:/^\d+(\.\d{1,2})?$/'],
             'cliente_id'       => ['required', 'exists:cliente,id'],
             'data_liberacao'   => ['nullable', 'date'],
             'data_entrega'     => ['required', 'date'],

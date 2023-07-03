@@ -17,10 +17,12 @@ class CreateFornecedorTable extends Migration
             $table->bigIncrements('id');
             $table->unsignedBigInteger('usuario_id');
 
+            $table->string('cpf_cnpj', 14)->nullable()->unique();
+            
             $table->string('nome', 256);
             $table->string('telefone', 14);
             $table->string('email', 256);
-            $table->string('cpf_cnpj', 14)->nullable()->unique();
+            $table->string('endereco', 256);
 
             $table->datetime('data_criacao');
             $table->datetime('data_atualizacao');
