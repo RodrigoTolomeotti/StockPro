@@ -85,9 +85,8 @@ class EstoqueController extends Controller
             } else {
                 $produto->quantidade = $produto->quantidade - $request->input('quantidade');
 
-                if($produto->quantidade === 0)
+                if($produto->quantidade <= 0)
                     throw ValidationException::withMessages(['incorrect' => 'Não é possível lançar estoque de saída quando não há estoque 😢']);
-
             }
             $produto->save();
 

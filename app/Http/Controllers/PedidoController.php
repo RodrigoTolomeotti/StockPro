@@ -86,7 +86,7 @@ class PedidoController extends Controller
             'valor_total'      => ['nullable', 'numeric', 'min:0', 'regex:/^\d+(\.\d{1,2})?$/'],
             'cliente_id'       => ['required', 'exists:cliente,id'],
             'data_liberacao'   => ['nullable', 'date'],
-            'data_entrega'     => ['required', 'date'],
+            'data_entrega'     => ['nullable', 'date'],
         ];
     }
 
