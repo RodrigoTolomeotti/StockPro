@@ -17,7 +17,6 @@ $factory->define(App\Produto::class, function (Faker\Generator $faker) {
         'nome' => $faker->name,
         'preco_unitario' => $faker->numberBetween(50,1000),
         'tipo_produto_id' => $faker->numberBetween(1,2),
-        'fornecedor_id' => $faker->numberBetween(1,2),
         'descricao' => $faker->text,
         'imagem' => null,
         'usuario_id' => $user->id,

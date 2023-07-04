@@ -99,7 +99,7 @@ class itemPedidoController extends Controller
             if(!$request->input('pedido_id'))
                 throw ValidationException::withMessages(['save' => 'Salve o cabeçalho do pedido!']);
 
-            if(!$this->checkStockProduct($produto, $object['quantidade']))
+            if(!$this->checkStockProduct($produto, $object['quantidade'], 1))
                 throw ValidationException::withMessages(['incorrect' => 'Produto sem estoque 😢']);
 
             $itemPedido = $this->user->itensPedido()->create($object);
@@ -136,7 +136,7 @@ class itemPedidoController extends Controller
             if(!$request->input('pedido_id'))
                 throw ValidationException::withMessages(['save' => 'Salve o cabeçalho do pedido!']);
 
-            if(!$this->checkStockProduct($produto, $object['quantidade']))
+            if(!$this->checkStockProduct($produto, $object['quantidade'], 1))
                 throw ValidationException::withMessages(['incorrect' => 'Produto sem estoque 😢']);
 
             $itemPedido = itemPedido::find($id);
@@ -166,8 +166,11 @@ class itemPedidoController extends Controller
 
         $itemPedido = $this->user->itensPedido()->find($id);
         $pedidoId = $itemPedido->pedido_id;
+        $produto = Produto::find($itemPedido->produto_id);
 
         try{
+            if(!$this->checkStockProduct($produto, $itemPedido->quantidade, 2))
+                throw ValidationException::withMessages(['incorrect' => 'Produto sem estoque 😢']);
 
             $itemPedido->delete();
             $valorTotal = $this->calculeValuePedido($pedidoId);
@@ -182,13 +185,17 @@ class itemPedidoController extends Controller
         return ['data' => ['valor_total' => $valorTotal]];
     }
 
-    public function checkStockProduct($produto, $quantidadePedida) {
+    public function checkStockProduct($produto, $quantidadePedida, $tipoEstoque) {
         
         $quantidadeAtual = $produto->quantidade;
 
-        $produto->quantidade = $produto->quantidade - $quantidadePedida;
-        if($produto->quantidade <= 0)
-            return false;
+        if($tipoEstoque == 1) {
+            $produto->quantidade = $quantidadeAtual - $quantidadePedida;
+            if($produto->quantidade <= 0)
+                return false;
+        } else if($tipoEstoque == 2) {
+            $produto->quantidade = $quantidadeAtual + $quantidadePedida;
+        }
         
         $produto->save();
         return true;

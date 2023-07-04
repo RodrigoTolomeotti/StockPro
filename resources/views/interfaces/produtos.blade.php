@@ -7,7 +7,7 @@
 
 @section('interface')
 <div class="d-flex flex-column flex-grow-1">
-    <c-card reference="StockPro > produtos" title="produtos">
+    <c-card reference="StockPro > Produtos" title="Produtos">
         <template slot="icons">
             <i @click="novoProduto" class="fas fa-plus fa-lg"></i>
             <i @click="abrirFiltros" class="fas fa-filter fa-lg">
@@ -158,7 +158,7 @@
                 produto: {},
                 commonFields: [
                     {name: 'Nome', attribute: 'nome'},
-                    {name: 'Custo', attribute: 'custo'},
+                    // {name: 'Custo', attribute: 'custo'},
                     {name: 'Preço Unitário', attribute: 'preco_unitario'},
                     {name: 'Quantidade Disponível', attribute: 'quantidade'},
                     {name: 'Tipo de Produto', attribute: 'tipo_produto_id'},
@@ -237,7 +237,6 @@
                             })
                             return;
                         }
-                        this.modalProduto = false
                         this.loadProduto()
                         store.alerts.push({text: 'Produto alterado com sucesso', variant:'success'})
                     })
@@ -254,9 +253,8 @@
                             })
                             return;
                         }
-                        this.modalProduto = false
                         this.loadProduto()
-                        store.alerts.push({text: 'Produtos incluído com sucesso', variant:'success'})
+                        store.alerts.push({text: 'Produto incluído com sucesso', variant:'success'})
                     })
                 }
             },

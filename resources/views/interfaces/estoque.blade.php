@@ -209,14 +209,20 @@
             excluirTipoProduto() {
 
                 axios.delete('api/estoque/' + this.idEstoqueExcluir).then(res => {
+                    if (res.data.errors) {
+                        Object.keys(res.data.errors).forEach(k => {
+                            res.data.errors[k].forEach(e => {
+                                store.alerts.push({text: `${e}`, variant:'danger', delay: 3500})
+                            })
+                        })
+                        return;
+                    }
                     this.excluirModal = false
                     this.loadEstoque()
 
                     if(res.data.data){
                         store.alerts.push({text: 'Estoque excluído com sucesso', variant:'success'})
-                    }else{
-                        store.alerts.push({text: 'Erro ao excluir Estoque', variant:'danger'})
-                    }
+                    }   
                 })
 
             },

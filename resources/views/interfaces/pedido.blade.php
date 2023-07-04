@@ -192,7 +192,7 @@
                         v-if="field.attribute === 'produto_id'"
                         id="field.attribute"
                         v-model="itemPedido[field.attribute]"
-                        @change="precoManual = false"
+                        @change="precoManual = false; precoUnitario"
                         :options="optionsProdutos"
                         :disabled="editItemPedido">
                         <template v-slot:first>
@@ -204,7 +204,7 @@
                         id="field.attribute"
                         v-model="itemPedido.preco_unitario"
                         type="text"
-                        @change="precoManual = true"
+                        @change="precoManual = true;"
                     ></b-form-input>
                     <b-form-input
                         v-else
@@ -303,7 +303,7 @@
 
         <template v-slot:buttons>
             <button @click="excluirModal = false" size="sm">Não</button>
-            <button @click="excluirTipoProduto" size="sm" variant="primary">Sim</button>
+            <button @click="excluirPedido" size="sm" variant="primary">Sim</button>
         </template>
 
         Deseja realmente excluir o pedido?
@@ -348,7 +348,6 @@
                 modalItemPedido: false,
                 modalFiltro: false,
                 modalFiltroItemPedido: false,
-                tipoProduto: {},
                 commonFields: [
                     {name: 'Id', attribute: 'id', type: 'readonly'},
                     {name: 'Cliente', attribute: 'cliente_id', type: 'select'},
@@ -469,6 +468,8 @@
                             return;
                         }
                         this.loadPedido()
+                        this.pedido.id = res.data.data.id;
+                        this.dontActiveTab = 0;
                         store.alerts.push({text: 'Pedido alterado com sucesso', variant:'success'})
                     })
 
@@ -485,11 +486,13 @@
                             return;
                         }
                         this.filters.id = res.data.data.id
+                        this.pedido.id = res.data.data.id;
                         this.loadPedido()
+                        this.dontActiveTab = 0;
                         store.alerts.push({text: 'Pedido incluído com sucesso', variant:'success'})
                     })
                 }
-                this.modalPedido = false;
+                // this.modalPedido = false;
             },
             loadItemPedido() {
                 axios.get('api/item-pedido', {
@@ -543,6 +546,9 @@
                 })
             },
             salvarItemPedido() {
+                if(this.pedido.id) {
+                    this.itemPedido.pedido_id = this.pedido.id
+                }
                 if (this.itemPedido.id) {
                     axios.put('api/item-pedido/' + this.itemPedido.id, {
                         ...this.itemPedido
@@ -575,7 +581,7 @@
                         this.modalItemPedido = false;
                         this.loadItemPedido()
                         this.pedido.valor_total = res.data.data.valor_total;
-                        store.alerts.push({text: 'Itens do pedido incluídos com sucesso', variant:'success'})
+                        store.alerts.push({text: 'Item do pedido incluído com sucesso', variant:'success'})
                     })
                 }
             },
@@ -663,7 +669,7 @@
                     this.itemPedido.preco_unitario = produtoSelecionado.preco_unitario;
                     return produtoSelecionado.preco_unitario;
                 }
-                return null;
+                return 0;
             }
         //     precoUnitario() {
         //     const produtoSelecionado = this.produtos.find(produto => produto.id === this.itemPedido.produto_id);
