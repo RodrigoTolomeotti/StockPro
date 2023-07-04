@@ -192,7 +192,7 @@
                         v-if="field.attribute === 'produto_id'"
                         id="field.attribute"
                         v-model="itemPedido[field.attribute]"
-                        @change="precoManual = false"
+                        @change="precoManual = false; precoUnitario"
                         :options="optionsProdutos"
                         :disabled="editItemPedido">
                         <template v-slot:first>
@@ -204,7 +204,7 @@
                         id="field.attribute"
                         v-model="itemPedido.preco_unitario"
                         type="text"
-                        @change="precoManual = true"
+                        @change="precoManual = true;"
                     ></b-form-input>
                     <b-form-input
                         v-else
@@ -303,7 +303,7 @@
 
         <template v-slot:buttons>
             <button @click="excluirModal = false" size="sm">Não</button>
-            <button @click="excluirTipoProduto" size="sm" variant="primary">Sim</button>
+            <button @click="excluirPedido" size="sm" variant="primary">Sim</button>
         </template>
 
         Deseja realmente excluir o pedido?
@@ -348,7 +348,6 @@
                 modalItemPedido: false,
                 modalFiltro: false,
                 modalFiltroItemPedido: false,
-                tipoProduto: {},
                 commonFields: [
                     {name: 'Id', attribute: 'id', type: 'readonly'},
                     {name: 'Cliente', attribute: 'cliente_id', type: 'select'},

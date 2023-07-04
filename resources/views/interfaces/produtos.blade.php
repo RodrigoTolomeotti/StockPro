@@ -158,7 +158,7 @@
                 produto: {},
                 commonFields: [
                     {name: 'Nome', attribute: 'nome'},
-                    {name: 'Custo', attribute: 'custo'},
+                    // {name: 'Custo', attribute: 'custo'},
                     {name: 'Preço Unitário', attribute: 'preco_unitario'},
                     {name: 'Quantidade Disponível', attribute: 'quantidade'},
                     {name: 'Tipo de Produto', attribute: 'tipo_produto_id'},

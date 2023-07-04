@@ -64,3 +64,9 @@ de rota como o exemplo abaixo
     Require all granted
 </Directory>
 ```
+
+# GUIA DO USUÁRIO
+Acesse o link para visualizar o manual do usuário e um vídeo demo do sistema!
+```
+https://1drv.ms/f/s!Alcr87NDrJN5gb9gph2ULkYF6VMi7A?e=s9Y9DW
+```

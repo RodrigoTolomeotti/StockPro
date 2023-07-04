@@ -125,10 +125,14 @@ class EstoqueController extends Controller
         try{            
             $produto = Produto::find($estoque->produto_id);
             $produto->quantidade = $produto->quantidade - $estoque->quantidade;
+            if($produto->quantidade <= 0) 
+                throw ValidationException::withMessages(['incorrect' => 'Produto com estoque negativo, não é possível a exclusão! 😢']);
+
             $estoque->delete();
             $produto->save();
-        }catch(\Exception $e){
-            return ['data' => false];
+        }catch (ValidationException | Exception $e) {
+
+            return ['errors' => $e->errors()];
         }
 
         return ['data' => true];
